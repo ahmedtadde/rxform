@@ -1,0 +1,10 @@
+{
+  "plugins": [
+    [
+      "ramda",
+      {
+        "useES": true
+      }
+    ]
+  ]
+}
