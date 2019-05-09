@@ -6,7 +6,7 @@ import typescript from 'rollup-plugin-typescript2';
 
 // tslint:disable-next-line: no-var-requires
 const pkg = require('./package.json');
-const libraryName = 'RxForm';
+const libraryName = 'rxform';
 
 export default {
   // Indicate here external modules you don't wanna include in your bundle (i.e.: 'lodash')
@@ -18,8 +18,7 @@ export default {
       format: 'umd',
       name: libraryName,
       sourcemap: true
-    },
-    { file: pkg.module, format: 'es', sourcemap: true }
+    }
   ],
   plugins: [
     // Compile TypeScript files

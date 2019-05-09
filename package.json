@@ -21,7 +21,7 @@
   "scripts": {
     "lint": "tslint  --project tsconfig.json -t codeFrame 'src/**/*.ts'",
     "prebuild": "rimraf lib",
-    "build": "tsc --module commonjs && rollup -c rollup.config.ts && rimraf .rpt2_cache",
+    "build": "rollup -c rollup.config.ts && rimraf .rpt2_cache",
     "start": "rollup -c rollup.config.ts -w"
   },
   "devDependencies": {
@@ -37,6 +37,7 @@
     "rollup-plugin-node-resolve": "^4.2.1",
     "rollup-plugin-sourcemaps": "^0.4.2",
     "rollup-plugin-typescript2": "^0.20.1",
+    "rollup-plugin-uglify": "^6.0.2",
     "shelljs": "^0.8.3",
     "tslint": "^5.15.0",
     "tslint-config-prettier": "^1.18.0",
@@ -48,6 +49,7 @@
   },
   "dependencies": {
     "immer": "^2.1.5",
+    "is-plain-object": "^3.0.0",
     "ramda": "^0.26.1",
     "rxjs": "^6.4.0"
   }
