@@ -1,5 +1,5 @@
 {
-  "name": "rx-form",
+  "name": "rxform",
   "version": "0.0.0",
   "description": "Declarative and Event Driven Form Handling",
   "keywords": [
@@ -9,16 +9,16 @@
     "validation",
     "event-driven"
   ],
-  "main": "lib/rx-form.umd.js",
-  "module": "lib/rx-form.es5.js",
-  "typings": "lib/types/rx-form.d.ts",
+  "main": "lib/rxform.umd.js",
+  "module": "lib/rxform.js",
+  "typings": "lib/types/rxform.d.ts",
   "files": [
     "lib"
   ],
   "author": "metronlabsllc <ahmedtadde@gmail.com>",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/metronlabsllc/rxform.git"
   },
   "license": "MIT",
   "engines": {
@@ -26,8 +26,8 @@
   },
   "scripts": {
     "lint": "tslint  --project tsconfig.json -t codeFrame 'src/**/*.ts'",
-    "prebuild": "rimraf lib && rimraf testing/rx-form.umd.js",
-    "build": "rollup -c rollup.config.ts && rimraf .rpt2_cache && cp lib/rx-form.umd.js testing/rx-form.umd.js",
+    "prebuild": "rimraf lib && rimraf testing/rxform.umd.js",
+    "build": "rollup -c rollup.config.ts && rimraf .rpt2_cache && cp lib/rxform.umd.js browser/rxform.umd.js",
     "start": "rollup -c rollup.config.ts -w"
   },
   "devDependencies": {

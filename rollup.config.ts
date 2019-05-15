@@ -19,7 +19,8 @@ export default {
       format: 'umd',
       name: libraryName,
       sourcemap: true
-    }
+    },
+    { file: pkg.module, format: 'es', sourcemap: true }
   ],
   plugins: [
     // Compile TypeScript files
