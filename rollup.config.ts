@@ -1,12 +1,13 @@
 import babel from 'rollup-plugin-babel';
 import commonjs from 'rollup-plugin-commonjs';
+import builtins from 'rollup-plugin-node-builtins';
 import resolve from 'rollup-plugin-node-resolve';
 import sourceMaps from 'rollup-plugin-sourcemaps';
 import typescript from 'rollup-plugin-typescript2';
 
 // tslint:disable-next-line: no-var-requires
 const pkg = require('./package.json');
-const libraryName = 'rxform';
+const libraryName = 'RxForm';
 
 export default {
   // Indicate here external modules you don't wanna include in your bundle (i.e.: 'lodash')
@@ -26,6 +27,7 @@ export default {
       useTsconfigDeclarationDir: true
     }),
     babel(),
+    builtins(),
     // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
     commonjs(),
     // Allow node_modules resolution, so you can use 'external' to control

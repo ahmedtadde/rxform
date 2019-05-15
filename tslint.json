@@ -10,7 +10,16 @@
   "rules": {
     "match-default-export-name": false,
     "export-name": false,
-    "import-name": false
+    "import-name": false,
+    "no-typeof-undefined": false,
+    "prefer-type-cast": false,
+    "prefer-array-literal": [
+      true,
+      {
+        "allow-type-parameters": true
+      }
+    ],
+    "interface-name": false
   },
   "linterOptions": {
     "exclude": ["node_modules/**"]

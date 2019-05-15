@@ -32,6 +32,7 @@
       "@src/*": ["src/*"],
       "@core/*": ["src/core/*"],
       "@utils/*": ["src/core/utils/*"],
+      "@lib-types": ["src/core/typings/index"],
       "@config/*": ["src/core/config/*"]
     }
   },

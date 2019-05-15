@@ -1,8 +1,14 @@
 {
   "name": "rx-form",
   "version": "0.0.0",
-  "description": "",
-  "keywords": [],
+  "description": "Declarative and Event Driven Form Handling",
+  "keywords": [
+    "form",
+    "reactive",
+    "reactive programming",
+    "validation",
+    "event-driven"
+  ],
   "main": "lib/rx-form.umd.js",
   "module": "lib/rx-form.es5.js",
   "typings": "lib/types/rx-form.d.ts",
@@ -20,37 +26,31 @@
   },
   "scripts": {
     "lint": "tslint  --project tsconfig.json -t codeFrame 'src/**/*.ts'",
-    "prebuild": "rimraf lib",
-    "build": "rollup -c rollup.config.ts && rimraf .rpt2_cache",
+    "prebuild": "rimraf lib && rimraf testing/rx-form.umd.js",
+    "build": "rollup -c rollup.config.ts && rimraf .rpt2_cache && cp lib/rx-form.umd.js testing/rx-form.umd.js",
     "start": "rollup -c rollup.config.ts -w"
   },
   "devDependencies": {
-    "@babel/core": "^7.4.3",
-    "@types/node": "^11.13.2",
-    "@types/ramda": "^0.26.6",
-    "babel-plugin-ramda": "^2.0.0",
-    "prettier": "^1.16.4",
+    "@babel/core": "^7.4.4",
+    "@types/node": "^12.0.2",
+    "prettier": "^1.17.1",
     "rimraf": "^2.6.3",
-    "rollup": "^1.9.0",
+    "rollup": "^1.11.3",
     "rollup-plugin-babel": "^4.3.2",
     "rollup-plugin-commonjs": "^9.3.4",
-    "rollup-plugin-node-resolve": "^4.2.1",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-node-resolve": "^4.2.4",
     "rollup-plugin-sourcemaps": "^0.4.2",
-    "rollup-plugin-typescript2": "^0.20.1",
+    "rollup-plugin-typescript2": "^0.21.0",
     "rollup-plugin-uglify": "^6.0.2",
     "shelljs": "^0.8.3",
-    "tslint": "^5.15.0",
+    "tslint": "^5.16.0",
     "tslint-config-prettier": "^1.18.0",
     "tslint-config-standard": "^8.0.1",
     "tslint-eslint-rules": "^5.4.0",
     "tslint-immutable": "^5.5.2",
-    "tslint-microsoft-contrib": "^6.1.0",
-    "typescript": "^3.4.3"
+    "tslint-microsoft-contrib": "^6.1.1",
+    "typescript": "^3.4.5"
   },
-  "dependencies": {
-    "immer": "^2.1.5",
-    "is-plain-object": "^3.0.0",
-    "ramda": "^0.26.1",
-    "rxjs": "^6.4.0"
-  }
+  "dependencies": {}
 }
