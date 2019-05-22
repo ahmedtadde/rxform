@@ -1,4 +1,4 @@
-import { DOMEventEmitterEventConfig } from '@lib-types';
+import { DOMEventsEmitterEventConfig, EventEmitterListerner } from '@lib-types';
 import { throwError } from '@utils/errors';
 import { not } from '@utils/logic';
 import { nonEmptyString } from '@utils/string';
@@ -66,7 +66,7 @@ export function addDOMListener(
   event: string,
   listener: EventListenerOrEventListenerObject,
   options?: EventListenerOptions | boolean
-): (...args: any[]) => void {
+): EventEmitterListerner {
   const $el = target instanceof Element ? target : domSelector(target);
   if (not($el instanceof Element)) {
     throwError('Invalid target param... resolved to non DOM element');
@@ -77,14 +77,14 @@ export function addDOMListener(
     ($el as Element).removeEventListener(event, listener, options || {});
 }
 
-export function domEventEmitter(
+export function domEventsEmitter(
   element: Element,
-  events: DOMEventEmitterEventConfig[]
+  events: DOMEventsEmitterEventConfig[]
 ): EventEmitter {
   const emitter$: EventEmitter = new EventEmitter();
   events.forEach(
-    (event: DOMEventEmitterEventConfig): void => {
-      const { dom: domEvent, emitter: emitterEvent, options = {} } = event;
+    (event: DOMEventsEmitterEventConfig): void => {
+      const { domEvent, emitterEvent, options = {} } = event;
       const listener: EventListenerOrEventListenerObject = (e: Event) =>
         emitter$.emit(emitterEvent, e);
       const cleanup = addDOMListener(element, domEvent, listener, options);
