@@ -45,18 +45,20 @@ export function domSelector(selector: string, from?: Element): Element | void {
 export const getFormElement = (
   target: string | HTMLFormElement | Element
 ): HTMLFormElement | void => {
+  const assertFormElement = (value: any): void => {
+    if (not(isFormElement(value))) {
+      throwError('Invalid form target value');
+    }
+  };
+
   if (target instanceof HTMLFormElement) {
     return target;
   } else if (target instanceof Element) {
-    if (not(isFormElement(target))) {
-      throwError('Invalid form target value');
-    }
+    assertFormElement(target);
     return target as HTMLFormElement;
   } else if (nonEmptyString(target)) {
     const $el = domSelector(target);
-    if (not(isFormElement($el))) {
-      throwError('Invalid form target value');
-    }
+    assertFormElement($el);
     return $el as HTMLFormElement;
   }
 };
@@ -84,11 +86,11 @@ export function domEventsEmitter(
   const emitter$: EventEmitter = new EventEmitter();
   events.forEach(
     (event: DOMEventsEmitterEventConfig): void => {
-      const { domEvent, emitterEvent, options = {} } = event;
+      const { type: domEvent, register: emitterEvent, options = {} } = event;
       const listener: EventListenerOrEventListenerObject = (e: Event) =>
         emitter$.emit(emitterEvent, e);
       const cleanup = addDOMListener(element, domEvent, listener, options);
-      emitter$.on('remove-dom-listeners', cleanup);
+      emitter$.on('_remove-dom-listeners', cleanup);
     }
   );
 

@@ -19,22 +19,14 @@ export type DOMEventsType =
   | DOMEvents.SUBMIT;
 
 export type DOMFieldEventsType =
-  | DOMEvents.FOCUS
   | DOMEvents.INPUT
   | DOMEvents.CHANGE
   | DOMEvents.BLUR;
 
 export interface DOMEventsEmitterEventConfig {
-  domEvent: string;
-  emitterEvent: string;
+  type: string;
+  register: string;
   options?: EventListenerOptions | boolean;
 }
 
 export type EventEmitterListerner = (...args: any[]) => any;
-
-export interface EventEmitterListernerConfig {
-  listener: EventEmitterListerner;
-  map: (...args: any[]) => any;
-  filter: (...args: any[]) => boolean;
-  options?: any;
-}

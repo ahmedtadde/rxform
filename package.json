@@ -26,8 +26,8 @@
   },
   "scripts": {
     "lint": "tslint  --project tsconfig.json -t codeFrame 'src/**/*.ts'",
-    "prebuild": "rimraf lib && rimraf testing/rxform.umd.js",
-    "build": "rollup -c rollup.config.ts && rimraf .rpt2_cache && cp lib/rxform.umd.js browser/rxform.umd.js",
+    "prebuild": "rimraf lib && rimraf browser-testing/rxform.umd.js",
+    "build": "rollup -c rollup.config.ts && rimraf .rpt2_cache && cp lib/rxform.umd.js browser-testing/rxform.umd.js",
     "start": "rollup -c rollup.config.ts -w"
   },
   "devDependencies": {
