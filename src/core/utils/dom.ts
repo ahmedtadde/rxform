@@ -1,6 +1,11 @@
-import { DOMEventsEmitterEventConfig, EventEmitterListerner } from '@lib-types';
+import {
+  DOMEventsEmitterEventConfig,
+  DOMFieldElementsType,
+  EventEmitterListerner
+} from '@lib-types';
 import { throwError } from '@utils/errors';
-import { not } from '@utils/logic';
+import { isNil, not } from '@utils/logic';
+import { isNumber } from '@utils/number';
 import { nonEmptyString } from '@utils/string';
 import { EventEmitter } from 'events';
 
@@ -95,4 +100,91 @@ export function domEventsEmitter(
   );
 
   return emitter$;
+}
+
+export function getFormFieldElementValue($el: DOMFieldElementsType) {
+  if (isNil($el) || not(isFormFieldElement($el))) {
+    throwError('Invalid form field element param');
+  }
+
+  if ($el instanceof HTMLInputElement) {
+    return getInputFieldElementValue($el);
+  }
+
+  if ($el instanceof HTMLSelectElement) {
+    return getSelectFieldElementValue($el);
+  }
+
+  if ($el instanceof HTMLTextAreaElement) {
+    return getTextAreaFieldElementValue($el);
+  }
+}
+
+export function getInputFieldElementValue($el: HTMLInputElement) {
+  if (not($el instanceof HTMLInputElement)) {
+    throwError('Invalid form field element param');
+  }
+  const parser = ($field: HTMLInputElement) => {
+    switch ($field.type) {
+      case 'image':
+      case 'file':
+      case 'button':
+      case 'reset':
+      case 'submit':
+        return null;
+      case 'number':
+        return Number($field.value);
+      case 'checkbox':
+        return $field.checked ? $field.value : null;
+      case 'radio':
+        return $field.checked ? $field.value : null;
+      default:
+        return $field.value;
+    }
+  };
+  return parser($el);
+}
+
+export function getSelectFieldElementValue($el: HTMLSelectElement) {
+  if (not($el instanceof HTMLSelectElement)) {
+    throwError('Invalid form field element param');
+  }
+  const parser = ($field: HTMLSelectElement) => {
+    const singleValue = ($target: HTMLSelectElement) => {
+      return (
+        (Array.isArray($target.options) &&
+          isNumber($target.selectedIndex) &&
+          $target.options[$target.selectedIndex] &&
+          not(isNil($target.options[$target.selectedIndex].value)) &&
+          $target.options[$target.selectedIndex].value) ||
+        null
+      );
+    };
+
+    const multipleValues = ($target: HTMLSelectElement) => {
+      const options = Array.isArray($target.options) ? $target.options : [];
+      return Array.from(options)
+        .filter((option: HTMLOptionElement) => option.selected)
+        .map((option: HTMLOptionElement) => {
+          if (isNil(option.value) && isNil(option.text)) {
+            return null;
+          }
+          return isNil(option.value) ? option.text : option.value;
+        });
+    };
+    switch ($field.multiple) {
+      case false:
+        return singleValue($field);
+      default:
+        return multipleValues($field);
+    }
+  };
+  return parser($el);
+}
+
+export function getTextAreaFieldElementValue($el: HTMLTextAreaElement) {
+  if (not($el instanceof HTMLTextAreaElement)) {
+    throwError('Invalid form field element param');
+  }
+  return $el.value;
 }

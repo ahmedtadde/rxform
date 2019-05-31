@@ -1,3 +1,5 @@
+import { getFormFieldElementValue } from '@utils/dom';
+import { isFunction } from '@utils/logic';
 import { nonEmptyString, trim } from '@utils/string';
 
 export default function config(options: any) {
@@ -24,7 +26,8 @@ export default function config(options: any) {
 function getFieldConfig(name: string, options: any) {
   return {
     [name]: {
-      dependencies: getFieldDependencies(options)
+      dependencies: getFieldDependencies(options),
+      parser: getFieldParser(options)
     }
   };
 }
@@ -48,4 +51,10 @@ function getFieldDependencies(options: any) {
   };
 
   return resolve(fields, dependencies);
+}
+
+function getFieldParser(options: any) {
+  return options && isFunction(options.parser)
+    ? options.parser
+    : getFormFieldElementValue;
 }
