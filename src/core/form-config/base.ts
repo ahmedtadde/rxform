@@ -31,7 +31,7 @@ export default function config(options: any) {
           type: eventName
         };
         return eventName === 'blur'
-          ? Object.assign({}, eventConfig, { options: true })
+          ? Object.assign({}, eventConfig, { options: true }) // sets useCapture option to true
           : eventConfig;
       });
   };

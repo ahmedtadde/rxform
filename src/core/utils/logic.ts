@@ -4,4 +4,3 @@ export const isUndefined = (x: any): boolean =>
   x === undefined && typeof x === 'undefined';
 export const isNull = (x: any): boolean => x === null && typeof x === 'object';
 export const isNil = (x: any): boolean => isNull(x) || isUndefined(x);
-export const isFunction = (x: any): boolean => typeof x === 'function';

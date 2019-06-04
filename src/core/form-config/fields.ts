@@ -1,5 +1,11 @@
+import { I as Icombinator, K as Kcombinator } from '@utils/combinators';
 import { getFormFieldElementValue } from '@utils/dom';
-import { isFunction } from '@utils/logic';
+import {
+  isFunction,
+  isFunctionOrPromise,
+  isPromise,
+  promisifyFunction
+} from '@utils/object';
 import { nonEmptyString, trim } from '@utils/string';
 
 export default function config(options: any) {
@@ -24,10 +30,14 @@ export default function config(options: any) {
 }
 
 function getFieldConfig(name: string, options: any) {
+  const dependencies = getFieldDependencies(options);
+  const parser = getFieldParser(options);
+  const transformer = getFieldTransformer(options);
   return {
     [name]: {
-      dependencies: getFieldDependencies(options),
-      parser: getFieldParser(options)
+      dependencies,
+      parser,
+      transformer
     }
   };
 }
@@ -54,7 +64,12 @@ function getFieldDependencies(options: any) {
 }
 
 function getFieldParser(options: any) {
-  return options && isFunction(options.parser)
-    ? options.parser
-    : getFormFieldElementValue;
+  return isFunction(options.parser) ? options.parser : getFormFieldElementValue;
+}
+
+function getFieldTransformer(options: any) {
+  const transformer = isFunctionOrPromise(options.transformer)
+    ? options.transformer
+    : Icombinator;
+  return (...args: any[]) => promisifyFunction(transformer, ...args);
 }
