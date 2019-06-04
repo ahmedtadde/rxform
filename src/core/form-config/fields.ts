@@ -1,9 +1,8 @@
-import { I as Icombinator, K as Kcombinator } from '@utils/combinators';
+import { I as Icombinator } from '@utils/combinators';
 import { getFormFieldElementValue } from '@utils/dom';
 import {
   isFunction,
   isFunctionOrPromise,
-  isPromise,
   promisifyFunction
 } from '@utils/object';
 import { nonEmptyString, trim } from '@utils/string';
