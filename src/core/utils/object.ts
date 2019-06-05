@@ -9,9 +9,10 @@ export const isFunctionOrPromise = (x: any): boolean =>
   isFunction(x) || isPromise(x);
 
 export const promisifyFunction = (fn: any, ...args: any[]) => {
-  if (isPromise(fn)) return fn;
   if (not(isFunction(fn))) {
-    throwError(`Unable to promisify vale of type ${typeof fn}`);
+    throwError(
+      `function argument is invalid; received value of type ${typeof fn}`
+    );
   }
 
   return new Promise((resolve, reject) => {
