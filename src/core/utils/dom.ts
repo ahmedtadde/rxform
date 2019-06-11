@@ -95,7 +95,7 @@ export function domEventsEmitter(
       const listener: EventListenerOrEventListenerObject = (e: Event) =>
         emitter$.emit(emitterEvent, e);
       const cleanup = addDOMListener(element, domEvent, listener, options);
-      emitter$.on('_remove-dom-listeners', cleanup);
+      emitter$.on('form@remove-dom-listeners', cleanup);
     }
   );
 
