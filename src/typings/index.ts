@@ -23,9 +23,9 @@ export type DOMFieldEventsType =
   | DOMEvents.CHANGE
   | DOMEvents.BLUR;
 
-export interface DOMEventsEmitterEventConfig {
-  type: string;
-  register: string;
+export interface EmitterDOMEventConfig {
+  type: DOMEventsType;
+  registerAs: string;
   options?: EventListenerOptions | boolean;
 }
 

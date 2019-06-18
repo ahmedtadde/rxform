@@ -1,13 +1,13 @@
 import {
-  DOMEventsEmitterEventConfig,
   DOMFieldElementsType,
+  EmitterDOMEventConfig,
   EventEmitterListerner
 } from '@lib-types';
 import { throwError } from '@utils/errors';
 import { isNil, not } from '@utils/logic';
 import { isNumber } from '@utils/number';
 import { nonEmptyString } from '@utils/string';
-import { EventEmitter } from 'events';
+import { Emitter } from 'mitt';
 
 export function isInputElement(value: any) {
   return value instanceof HTMLInputElement;
@@ -84,20 +84,18 @@ export function addDOMListener(
     ($el as Element).removeEventListener(event, listener, options || {});
 }
 
-export function domEventsEmitter(
+export function emitterDomEvents(
+  emitter$: Emitter,
   element: Element,
-  events: DOMEventsEmitterEventConfig[]
-): EventEmitter {
-  const emitter$: EventEmitter = new EventEmitter();
-  events.forEach(
-    (event: DOMEventsEmitterEventConfig): void => {
-      const { type: domEvent, register: emitterEvent, options = {} } = event;
-      const listener: EventListenerOrEventListenerObject = (e: Event) =>
-        emitter$.emit(emitterEvent, e);
-      const cleanup = addDOMListener(element, domEvent, listener, options);
-      emitter$.on('form@remove-dom-listeners', cleanup);
-    }
-  );
+  domEvents: EmitterDOMEventConfig[]
+): Emitter {
+  domEvents.forEach((domEvent: EmitterDOMEventConfig): void => {
+    const { type, registerAs, options = {} } = domEvent;
+    const listener: EventListenerOrEventListenerObject = (e: Event) =>
+      emitter$.emit(registerAs, e);
+    const cleanup = addDOMListener(element, type, listener, options);
+    emitter$.on('form@remove-dom-listeners', cleanup);
+  });
 
   return emitter$;
 }
