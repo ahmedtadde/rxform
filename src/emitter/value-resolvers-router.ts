@@ -1,6 +1,14 @@
+import { DOMEvents, DOMEventsType } from '@src/typings';
 import { Emitter } from 'mitt';
 export const router = (emitter$: Emitter, formOptions: any): Emitter => {
   type SimplifiedResolverOptionObj = { events: string[]; selector: string };
+  const formDOMEvents = [
+    DOMEvents.BLUR,
+    DOMEvents.CHANGE,
+    DOMEvents.FOCUS,
+    DOMEvents.INPUT,
+    DOMEvents.SUBMIT
+  ];
   const resolvers: SimplifiedResolverOptionObj[] = formOptions.values.map(
     (resolverOptionObj: any): SimplifiedResolverOptionObj => {
       return {
@@ -17,7 +25,8 @@ export const router = (emitter$: Emitter, formOptions: any): Emitter => {
       (simplifiedResolverOptionObj: SimplifiedResolverOptionObj) => {
         return (
           simplifiedResolverOptionObj.events.includes(evt.type) &&
-          (evt.target as Element).matches(
+          evt.target instanceof Element &&
+          evt.target.matches(
             `form${formOptions.target} ${simplifiedResolverOptionObj.selector}`
           )
         );
@@ -33,7 +42,13 @@ export const router = (emitter$: Emitter, formOptions: any): Emitter => {
       );
     }
   };
-  emitter$.on('*', routeFormEventToResolver(emitter$, resolvers));
+
+  formDOMEvents.forEach((formDOMEventType: DOMEventsType) =>
+    emitter$.on(
+      `form@${formDOMEventType}`,
+      routeFormEventToResolver(emitter$, resolvers)
+    )
+  );
   return emitter$;
 };
 
