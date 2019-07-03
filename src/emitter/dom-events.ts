@@ -1,8 +1,11 @@
 import { DOMEvents, EmitterDOMEventConfig } from '@lib-types';
-import { emitterDomEvents, getFormElement } from '@utils/dom';
+import { emitterDomEvents } from '@utils/dom';
 import { Emitter } from 'mitt';
-export const register = (emitter$: Emitter, formOptions: any): Emitter => {
-  const $formEl = getFormElement(formOptions.target);
+export const register = (
+  $formEl: HTMLFormElement,
+  emitter$: Emitter,
+  _: any
+): Emitter => {
   const events: EmitterDOMEventConfig[] = [
     { type: DOMEvents.FOCUS, registerAs: 'form@focus' },
     { type: DOMEvents.INPUT, registerAs: 'form@input' },
@@ -11,7 +14,7 @@ export const register = (emitter$: Emitter, formOptions: any): Emitter => {
     { type: DOMEvents.SUBMIT, registerAs: 'form@submit' }
   ];
 
-  return emitterDomEvents(emitter$, $formEl as HTMLFormElement, events);
+  return emitterDomEvents(emitter$, $formEl, events);
 };
 
 export default register;

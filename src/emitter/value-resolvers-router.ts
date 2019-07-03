@@ -1,6 +1,10 @@
 import { DOMEvents, DOMEventsType } from '@src/typings';
 import { Emitter } from 'mitt';
-export const router = (emitter$: Emitter, formOptions: any): Emitter => {
+export const router = (
+  _: HTMLFormElement,
+  emitter$: Emitter,
+  formOptions: any
+): Emitter => {
   type SimplifiedResolverOptionObj = { events: string[]; selector: string };
   const formDOMEvents = [
     DOMEvents.BLUR,

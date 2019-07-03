@@ -37,14 +37,31 @@ export function isFormFieldElement(value: any) {
 
 export function domSelector(selector: string, from?: Element): Element | void {
   const queryString = nonEmptyString(selector) ? selector : '';
-  if (from instanceof Element) {
-    return (
-      from.querySelector(queryString) || throwError('Invalid query selector')
+  const resolver = ($sourceEl: Element | Document) => {
+    const $matchedElement = $sourceEl.querySelector(queryString);
+    return $matchedElement instanceof Element
+      ? $matchedElement
+      : throwError('Invalid query selector');
+  };
+
+  return from instanceof Element ? resolver(from) : resolver(document);
+}
+
+export function domSelectorAll(
+  selector: string,
+  from?: Element
+): Element[] | void {
+  const queryString = nonEmptyString(selector) ? selector : '';
+  const resolver = ($sourceEl: Element | Document) => {
+    const $matchedElements = Array.from(
+      $sourceEl.querySelectorAll(queryString)
     );
-  }
-  return (
-    document.querySelector(queryString) || throwError('Invalid query selector')
-  );
+    return $matchedElements.length
+      ? $matchedElements
+      : throwError('Invalid query selector');
+  };
+
+  return from instanceof Element ? resolver(from) : resolver(document);
 }
 
 export const getFormElement = (
