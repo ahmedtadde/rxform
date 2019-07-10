@@ -5,7 +5,7 @@ export default (
   emitter$: Emitter,
   formOptions: any
 ): Emitter => {
-  formOptions.values.forEach((formValueOptionObj: any) => {
+  formOptions.values.update.resolvers.forEach((formValueOptionObj: any) => {
     valueResolverFn($formEl, emitter$, formValueOptionObj);
   });
 

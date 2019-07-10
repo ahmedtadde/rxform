@@ -13,7 +13,7 @@ export const router = (
     DOMEvents.INPUT,
     DOMEvents.SUBMIT
   ];
-  const resolvers: SimplifiedResolverOptionObj[] = formOptions.values.map(
+  const resolvers: SimplifiedResolverOptionObj[] = formOptions.values.update.resolvers.map(
     (resolverOptionObj: any): SimplifiedResolverOptionObj => {
       return {
         events: resolverOptionObj.events,

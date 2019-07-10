@@ -15,9 +15,9 @@ export default (
   formValueOption: any
 ) => {
   const helpers = {
+    hooksListeners: getHookListeners(formValueOption),
     parseAsArray: isValuesArray(formValueOption),
     parser: getParser(formValueOption),
-    reducer: getReducer(formValueOption),
     transformer: getTransformer(formValueOption)
   };
 
@@ -59,17 +59,22 @@ function handler(evt: Event, ctx: any) {
     );
   }
 
-  parseValues(ctx.parser, $targetElements as DOMFieldElementsType[])
+  promisifyFunction(ctx.hooksListeners.start, evt)
+    .then(() => {
+      return parseValues(ctx.parser, $targetElements as DOMFieldElementsType[]);
+    })
     .then(extractedValues => {
       return transformValues(ctx.transformer, extractedValues);
     })
     .then(transformedValues => {
-      ctx.emitter$.emit('form@value', {
-        path: ctx.path,
+      const payload = {
+        type: ctx.dispatch,
         value: ctx.parseAsArray() ? transformedValues : transformedValues[0]
-      });
-      return true;
+      };
+      ctx.emitter$.emit('form@value', payload);
+      return promisifyFunction(ctx.hooksListeners.end, payload.value);
     })
+    .then(() => true)
     .catch((error: Error) => {
       throwError(error);
     });
@@ -113,10 +118,13 @@ function getTransformer(options: any) {
     : Icombinator;
 }
 
-function getReducer(options: any) {
-  return isFunctionOrPromise(options.reducer)
-    ? options.reducer
-    : (formValuesObj: any, _: any) => formValuesObj;
+function getHookListeners(options: any) {
+  return Object.keys(options.hooks).reduce((listeners: any, hook: string) => {
+    const listener = isFunctionOrPromise(options.hooks[hook])
+      ? options.hooks[hook]
+      : Icombinator;
+    return Object.assign({}, listeners, { [hook]: listener });
+  }, {});
 }
 
 function isValuesArray(options: any) {
