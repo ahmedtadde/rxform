@@ -68,7 +68,7 @@ function handler(evt: Event, ctx: any) {
     })
     .then(transformedValues => {
       const payload = {
-        type: ctx.dispatch,
+        type: ctx.dispatch || ctx.selector,
         value: ctx.parseAsArray() ? transformedValues : transformedValues[0]
       };
       ctx.emitter$.emit('form@value', payload);
@@ -84,15 +84,12 @@ async function parseValues(parserFn: any, $elements: DOMFieldElementsType[]) {
   return Promise.all(
     $elements.map($el => {
       return promisifyFunction(parserFn, $el).then((extractedValue: any) => {
-        const identifier =
+        const name =
           $el.name ||
-          $el.id ||
           throwError(
-            `Target element has no identifier (name/id on field): ${JSON.stringify(
-              $el
-            )}`
+            `Target element has no name attribute: ${JSON.stringify($el)}`
           );
-        return { identifier, value: extractedValue };
+        return { name, value: extractedValue };
       });
     })
   );
@@ -115,7 +112,7 @@ function getParser(options: any) {
 function getTransformer(options: any) {
   return isFunctionOrPromise(options.transformer)
     ? options.transformer
-    : Icombinator;
+    : (extractedValue: { name: string; value: any }) => extractedValue.value;
 }
 
 function getHookListeners(options: any) {

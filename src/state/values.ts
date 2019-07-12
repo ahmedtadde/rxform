@@ -1,67 +1,33 @@
-import { throwError } from '@src/utils/errors';
 import { I as Icombinator } from '@utils/combinators';
-import { log } from '@utils/logger';
+import { throwError } from '@utils/errors';
 import { isFunctionOrPromise, promisifyFunction } from '@utils/object';
-import EventEmitter, { Emitter } from 'mitt';
+import { Emitter } from 'mitt';
 export default (emitter$: Emitter, formValuesOptions: any) => {
-  const internalEmitter$: Emitter = new EventEmitter();
-  let states = {
-    current: getModel(formValuesOptions),
-    previous: null
-  };
-
   const helpers = {
-    getCurrentState: (statesObj: any) => Object.assign({}, statesObj.current),
-    getPreviousState: (statesObj: any) => Object.assign({}, statesObj.previous),
+    getStates: getStatesGenerator(formValuesOptions),
     hooksListeners: getHookListeners(formValuesOptions),
     reducer: getReducer(formValuesOptions)
   };
 
-  internalEmitter$.on('update-states', (newComputedState: any) => {
-    states = Object.assign(
-      {},
-      {
-        current: newComputedState,
-        previous: states.current
-      }
-    );
-    emitter$.emit(`form@values`, states);
-  });
-
   const listener = (
-    currentState: any,
     emitterInstance$: Emitter,
     optionsObj: any,
     helperFnsObj: any
   ) => (newValue: { type: string; value: any | any[] }) =>
     handler(
-      currentState,
       newValue,
       Object.assign({}, optionsObj, helperFnsObj, {
-        ctxEmitter$: emitterInstance$,
-        internalEmitter$
+        emitter$: emitterInstance$
       })
     );
 
-  emitter$.on(
-    `form@value`,
-    listener(
-      helpers.getCurrentState(states),
-      emitter$,
-      formValuesOptions,
-      helpers
-    )
-  );
+  emitter$.on(`form@value`, listener(emitter$, formValuesOptions, helpers));
 
   return listener;
 };
 
-function handler(
-  currentState: any,
-  newValue: { type: string; value: any | any[] },
-  ctx: any
-) {
-  log.info('handling form@value event with currentState', currentState);
+function handler(newValue: { type: string; value: any | any[] }, ctx: any) {
+  const currentState = ctx.getStates().current;
   promisifyFunction(ctx.hooksListeners.before, {
     currentState,
     newValue
@@ -70,10 +36,11 @@ function handler(
       return promisifyFunction(ctx.reducer, currentState, newValue);
     })
     .then((newComputedState: any) => {
-      ctx.internalEmitter$.emit('update-states', newComputedState);
+      const states = ctx.getStates(newComputedState);
+      ctx.emitter$.emit('form@values', states.current);
       return promisifyFunction(ctx.hooksListeners.after, {
-        currentState: newComputedState,
-        previousState: currentState
+        currentState: states.current,
+        previousState: states.previous
       });
     })
     .then(() => true)
@@ -102,4 +69,24 @@ function getHookListeners(options: any) {
     },
     {}
   );
+}
+
+function getStatesGenerator(options: any) {
+  let states = {
+    current: getModel(options),
+    previous: null
+  };
+
+  return (...args: any[]) => {
+    if (!args.length) {
+      return states;
+    }
+
+    states = {
+      current: args[0],
+      previous: states.current
+    };
+
+    return states;
+  };
 }
