@@ -49,21 +49,28 @@ function handler(newValue: { type: string; value: any | any[] }, ctx: any) {
     });
 }
 
-function getModel(options: any) {
-  return options.model ? options.model : throwError("Invalid values' model");
+function getInitialState(options: any) {
+  return options.state
+    ? options.state
+    : throwError("Invalid initial values' state");
 }
 
 function getReducer(options: any) {
-  return isFunctionOrPromise(options.update.reducer)
-    ? options.update.reducer
+  return isFunctionOrPromise(options.reducer)
+    ? options.reducer
     : throwError("Invalid values' state reducer");
 }
 
 function getHookListeners(options: any) {
-  return Object.keys(options.update.hooks).reduce(
+  const hooksDeclarationObj = Object.assign(
+    {},
+    { before: Icombinator, after: Icombinator },
+    options.hooks || {}
+  );
+  return Object.keys(hooksDeclarationObj).reduce(
     (listeners: any, hook: string) => {
-      const listener = isFunctionOrPromise(options.update.hooks[hook])
-        ? options.update.hooks[hook]
+      const listener = isFunctionOrPromise(hooksDeclarationObj[hook])
+        ? hooksDeclarationObj[hook]
         : Icombinator;
       return Object.assign({}, listeners, { [hook]: listener });
     },
@@ -73,7 +80,7 @@ function getHookListeners(options: any) {
 
 function getStatesGenerator(options: any) {
   let states = {
-    current: getModel(options),
+    current: getInitialState(options),
     previous: null
   };
 

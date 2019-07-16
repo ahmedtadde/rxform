@@ -1,6 +1,6 @@
 import registerDOMEvents from '@emitter/dom-events';
-import registerValueResolvers from '@emitter/value-resolvers';
-import registerValueResolversRouter from '@emitter/value-resolvers-router';
+import registerValueProviders from '@emitter/value-providers';
+import registerValueProvidersRouter from '@emitter/value-providers-router';
 import registerValuesStateStreamingFn from '@emitter/values-state';
 import { getFormElement } from '@utils/dom';
 import EventEmitter, { Emitter } from 'mitt';
@@ -9,8 +9,8 @@ export default (formOptions: any) => {
   const emitter$: Emitter = new EventEmitter();
   const registrationFns = [
     registerDOMEvents,
-    registerValueResolversRouter,
-    registerValueResolvers,
+    registerValueProvidersRouter,
+    registerValueProviders,
     registerValuesStateStreamingFn
   ];
   registrationFns.forEach((fn: any) =>

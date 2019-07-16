@@ -34,7 +34,7 @@ export default (
     );
 
   emitter$.on(
-    `form@value-resolver-route[selector="${formValueOption.selector}"]`,
+    `form@provider[selector="${formValueOption.selector}"]`,
     listener(emitter$, Object.assign({}, $formEl, formValueOption), helpers)
   );
 
@@ -116,12 +116,20 @@ function getTransformer(options: any) {
 }
 
 function getHookListeners(options: any) {
-  return Object.keys(options.hooks).reduce((listeners: any, hook: string) => {
-    const listener = isFunctionOrPromise(options.hooks[hook])
-      ? options.hooks[hook]
-      : Icombinator;
-    return Object.assign({}, listeners, { [hook]: listener });
-  }, {});
+  const hooksDeclarationObj = Object.assign(
+    {},
+    { start: Icombinator, end: Icombinator },
+    options.hooks || {}
+  );
+  return Object.keys(hooksDeclarationObj).reduce(
+    (listeners: any, hook: string) => {
+      const listener = isFunctionOrPromise(hooksDeclarationObj[hook])
+        ? hooksDeclarationObj[hook]
+        : Icombinator;
+      return Object.assign({}, listeners, { [hook]: listener });
+    },
+    {}
+  );
 }
 
 function isValuesArray(options: any) {
