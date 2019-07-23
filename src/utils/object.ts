@@ -47,7 +47,7 @@ export const getValueFromObject = (obj: any, path: string): any => {
     return selectorPath.split('.');
   };
 
-  const standarizedObjKey = (step: string) => {
+  const standarizeObjKey = (step: string) => {
     const regex = new RegExp('[[0-9]+]');
     if (step !== '[]' && regex.test(step)) {
       return Number(step.replace(/\[/g, '').replace(/\]/g, ''));
@@ -58,7 +58,7 @@ export const getValueFromObject = (obj: any, path: string): any => {
   const decomposedPath = getDecomposedPath(path);
 
   const getValue = (fromObj: any, key: string) => {
-    const standardizedKey: string | number = standarizedObjKey(key);
+    const standardizedKey: string | number = standarizeObjKey(key);
     if (isNumber(standardizedKey)) {
       Array.isArray(fromObj) ||
         throwError('Invalid obj; expected an array to extract value by index');
