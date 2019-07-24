@@ -1,6 +1,10 @@
 import { I as Icombinator } from '@utils/combinators';
 import { throwError } from '@utils/errors';
-import { isFunctionOrPromise, promisifyFunction } from '@utils/object';
+import {
+  isFunctionOrPromise,
+  isPlainObject,
+  promisifyFunction
+} from '@utils/object';
 import { Emitter } from 'mitt';
 export default (emitter$: Emitter, formValuesOptions: any) => {
   const helpers = {
@@ -36,6 +40,8 @@ function handler(newValue: { type: string; value: any | any[] }, ctx: any) {
       return promisifyFunction(ctx.reducer, currentState, newValue);
     })
     .then((newComputedState: any) => {
+      isPlainObject(newComputedState) ||
+        throwError('Invalid state values data; expected plain object');
       const states = ctx.getStates(newComputedState);
       ctx.emitter$.emit('form@values', states.current);
       return promisifyFunction(ctx.hooksListeners.after, {

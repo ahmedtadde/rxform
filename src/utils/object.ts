@@ -39,7 +39,7 @@ export const promisifyFunction = (fn: any, ...args: any[]) => {
 };
 
 export const getValueFromObject = (obj: any, path: string): any => {
-  const getDecomposedPath = (selectorPath: string) => {
+  const decomposePath = (selectorPath: string) => {
     nonEmptyString(selectorPath) ||
       throwError(
         `Invalid obj path expression: ${JSON.stringify(selectorPath)}`
@@ -55,7 +55,7 @@ export const getValueFromObject = (obj: any, path: string): any => {
     return step;
   };
 
-  const decomposedPath = getDecomposedPath(path);
+  const decomposedPath = decomposePath(path);
 
   const getValue = (fromObj: any, key: string) => {
     const standardizedKey: string | number = standarizeObjKey(key);
