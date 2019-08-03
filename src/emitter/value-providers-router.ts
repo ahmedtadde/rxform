@@ -1,13 +1,18 @@
 import { DOMEvents, DOMEventsType } from '@src/typings';
 import { throwError } from '@utils/errors';
-import { nonEmptyString } from '@utils/string';
+import {
+  isBoolean,
+  isPlainObject,
+  nonEmptyArray,
+  nonEmptyString
+} from '@utils/object';
 import { Emitter } from 'mitt';
 export const router = (
   _: HTMLFormElement,
   emitter$: Emitter,
   formOptions: any
 ): Emitter => {
-  type SimplifiedProviderOptionObj = { events: string[]; selector: string };
+  type SimplifiedProviderOptionsObj = { events: string[]; selector: string };
   const formDOMEvents = [
     DOMEvents.BLUR,
     DOMEvents.CHANGE,
@@ -15,23 +20,25 @@ export const router = (
     DOMEvents.INPUT,
     DOMEvents.SUBMIT
   ];
-  const providers: SimplifiedProviderOptionObj[] = formOptions.values.providers.map(
-    (providerOptionObj: any): SimplifiedProviderOptionObj => {
-      return {
-        events: getProviderEventSources(providerOptionObj, formDOMEvents),
-        selector: nonEmptyString(providerOptionObj.selector)
-          ? providerOptionObj.selector
-          : throwError('Invalid value provider DOM selector value')
-      };
-    }
-  );
+  const providers: SimplifiedProviderOptionsObj[] = formOptions.values.providers
+    .map(standardizeValueProviderOptionsObj)
+    .map(
+      (providerOptionObj: any): SimplifiedProviderOptionsObj => {
+        return {
+          events: getProviderEventSources(providerOptionObj, formDOMEvents),
+          selector: nonEmptyString(providerOptionObj.selector)
+            ? providerOptionObj.selector
+            : throwError('Invalid value provider DOM selector value')
+        };
+      }
+    );
 
   const routeFormEventToProvider = (
     emitterInstance$: Emitter,
-    simplifiedProvidersOptionObjs: SimplifiedProviderOptionObj[]
+    simplifiedProvidersOptionObjs: SimplifiedProviderOptionsObj[]
   ) => (evt: Event) => {
     const matchedProviderIndex = simplifiedProvidersOptionObjs.findIndex(
-      (simplifiedProviderOptionObj: SimplifiedProviderOptionObj) => {
+      (simplifiedProviderOptionObj: SimplifiedProviderOptionsObj) => {
         return (
           simplifiedProviderOptionObj.events.includes(evt.type) &&
           evt.target instanceof Element &&
@@ -72,7 +79,10 @@ function getProviderEventSources(
     const { events: providedEvents } = optionsObj;
     if (providedEvents === false) return ['submit'];
 
-    const events = Array.isArray(providedEvents) ? providedEvents : [];
+    const events =
+      Array.isArray(providedEvents) && providedEvents.length
+        ? providedEvents
+        : [];
     return events.reduce((collectedEvents: string[], evt: string) => {
       const shouldCollect = eventsFilter.includes(evt);
       if (shouldCollect) {
@@ -100,6 +110,55 @@ function getProviderEventSources(
   };
 
   return resolver(extractEvents(formOptions, allowedEvents));
+}
+
+function standardizeValueProviderOptionsObj(options: any) {
+  const optionsType = (obj: any) => {
+    if (nonEmptyString(obj)) return 'is-string';
+    if (isPlainObject(obj)) return 'is-plain-object';
+    if (
+      Array.isArray(obj) &&
+      nonEmptyArray(
+        obj
+          .slice(0, 3)
+          .filter((item: any) => nonEmptyString(item) || isBoolean(item))
+      )
+    ) {
+      return 'is-array';
+    }
+  };
+
+  switch (optionsType(options)) {
+    case 'is-string': {
+      return { selector: options };
+    }
+
+    case 'is-plain-object': {
+      return options;
+    }
+
+    case 'is-array': {
+      if (options.length === 1) {
+        return { selector: options[0] };
+      } else if (options.length === 2) {
+        return Object.assign(
+          {},
+          { selector: options[0] },
+          nonEmptyString(options[1])
+            ? { dispatch: options[1] }
+            : { multiple: Boolean(options[1]) }
+        );
+      } else if (options.length === 3) {
+        return {
+          dispatch: options[1],
+          multiple: Boolean(options[2]),
+          selector: options[0]
+        };
+      } else {
+        throwError(`Invalid value provider option`);
+      }
+    }
+  }
 }
 
 export default router;

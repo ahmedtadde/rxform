@@ -9,7 +9,7 @@ import { Emitter } from 'mitt';
 export default (emitter$: Emitter, formValuesOptions: any) => {
   const helpers = {
     getStates: getStatesGenerator(formValuesOptions),
-    hooksListeners: getHookListeners(formValuesOptions),
+    hookListeners: getHookListeners(formValuesOptions),
     reducer: getReducer(formValuesOptions)
   };
 
@@ -32,7 +32,7 @@ export default (emitter$: Emitter, formValuesOptions: any) => {
 
 function handler(newValue: { type: string; value: any | any[] }, ctx: any) {
   const currentState = ctx.getStates().current;
-  promisifyFunction(ctx.hooksListeners.before, {
+  promisifyFunction(ctx.hookListeners.before, {
     currentState,
     newValue
   })
@@ -44,7 +44,7 @@ function handler(newValue: { type: string; value: any | any[] }, ctx: any) {
         throwError('Invalid state values data; expected plain object');
       const states = ctx.getStates(newComputedState);
       ctx.emitter$.emit('form@values', states.current);
-      return promisifyFunction(ctx.hooksListeners.after, {
+      return promisifyFunction(ctx.hookListeners.after, {
         currentState: states.current,
         previousState: states.previous
       });
@@ -56,7 +56,7 @@ function handler(newValue: { type: string; value: any | any[] }, ctx: any) {
 }
 
 function getInitialState(options: any) {
-  return options.state
+  return isPlainObject(options.state)
     ? options.state
     : throwError("Invalid initial values' state");
 }

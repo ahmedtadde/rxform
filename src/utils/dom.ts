@@ -4,9 +4,8 @@ import {
   EventEmitterListerner
 } from '@lib-types';
 import { throwError } from '@utils/errors';
-import { isNil, not } from '@utils/logic';
-import { isNumber } from '@utils/number';
-import { nonEmptyString } from '@utils/string';
+import { not } from '@utils/logic';
+import { isNil, isNumber, nonEmptyString } from '@utils/object';
 import { Emitter } from 'mitt';
 
 export function isInputElement(value: any) {

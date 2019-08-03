@@ -6,19 +6,29 @@ import {
   getFormFieldElementValue,
   isFormFieldElement
 } from '@utils/dom';
-import { isFunctionOrPromise, promisifyFunction } from '@utils/object';
+import {
+  isBoolean,
+  isFunctionOrPromise,
+  isPlainObject,
+  nonEmptyArray,
+  nonEmptyString,
+  promisifyFunction
+} from '@utils/object';
 import { Emitter } from 'mitt';
 
 export default (
   $formEl: HTMLFormElement,
   emitter$: Emitter,
-  formValueOption: any
+  formValueOptions: any
 ) => {
+  const standardizedFormValueOptions = standardizeFormValueOptions(
+    formValueOptions
+  );
   const helpers = {
-    hooksListeners: getHookListeners(formValueOption),
-    parseAsArray: isValuesArray(formValueOption),
-    parser: getParser(formValueOption),
-    transformer: getTransformer(formValueOption)
+    hookListeners: getHookListeners(standardizedFormValueOptions),
+    parseAsArray: isValuesArray(standardizedFormValueOptions),
+    parser: getParser(standardizedFormValueOptions),
+    transformer: getTransformer(standardizedFormValueOptions)
   };
 
   const listener = (
@@ -34,8 +44,12 @@ export default (
     );
 
   emitter$.on(
-    `form@provider[selector="${formValueOption.selector}"]`,
-    listener(emitter$, Object.assign({}, $formEl, formValueOption), helpers)
+    `form@provider[selector="${standardizedFormValueOptions.selector}"]`,
+    listener(
+      emitter$,
+      Object.assign({}, $formEl, standardizedFormValueOptions),
+      helpers
+    )
   );
 
   return listener;
@@ -59,7 +73,7 @@ function handler(evt: Event, ctx: any) {
     );
   }
 
-  promisifyFunction(ctx.hooksListeners.start, evt)
+  promisifyFunction(ctx.hookListeners.start, evt)
     .then(() => {
       return parseValues(ctx.parser, $targetElements as DOMFieldElementsType[]);
     })
@@ -72,7 +86,7 @@ function handler(evt: Event, ctx: any) {
         value: ctx.parseAsArray() ? transformedValues : transformedValues[0]
       };
       ctx.emitter$.emit('form@value', payload);
-      return promisifyFunction(ctx.hooksListeners.end, payload.value);
+      return promisifyFunction(ctx.hookListeners.end, payload.value);
     })
     .then(() => true)
     .catch((error: Error) => {
@@ -116,22 +130,67 @@ function getTransformer(options: any) {
 }
 
 function getHookListeners(options: any) {
-  const hooksDeclarationObj = Object.assign(
+  const hooks = Object.assign(
     {},
     { start: Icombinator, end: Icombinator },
-    options.hooks || {}
+    isPlainObject(options.hooks) || {}
   );
-  return Object.keys(hooksDeclarationObj).reduce(
-    (listeners: any, hook: string) => {
-      const listener = isFunctionOrPromise(hooksDeclarationObj[hook])
-        ? hooksDeclarationObj[hook]
-        : Icombinator;
-      return Object.assign({}, listeners, { [hook]: listener });
-    },
-    {}
-  );
+
+  return {
+    end: isFunctionOrPromise(hooks.end) ? hooks.end : Icombinator,
+    start: isFunctionOrPromise(hooks.start) ? hooks.start : Icombinator
+  };
 }
 
 function isValuesArray(options: any) {
   return Kcombinator(options.multiple === true);
+}
+
+function standardizeFormValueOptions(options: any) {
+  const optionsType = (obj: any) => {
+    if (nonEmptyString(obj)) return 'is-string';
+    if (isPlainObject(obj)) return 'is-plain-object';
+    if (
+      Array.isArray(obj) &&
+      nonEmptyArray(
+        obj
+          .slice(0, 3)
+          .filter((item: any) => nonEmptyString(item) || isBoolean(item))
+      )
+    ) {
+      return 'is-array';
+    }
+  };
+
+  switch (optionsType(options)) {
+    case 'is-string': {
+      return { selector: options };
+    }
+
+    case 'is-plain-object': {
+      return options;
+    }
+
+    case 'is-array': {
+      if (options.length === 1) {
+        return { selector: options[0] };
+      } else if (options.length === 2) {
+        return Object.assign(
+          {},
+          { selector: options[0] },
+          nonEmptyString(options[1])
+            ? { dispatch: options[1] }
+            : { multiple: Boolean(options[1]) }
+        );
+      } else if (options.length === 3) {
+        return {
+          dispatch: options[1],
+          multiple: Boolean(options[2]),
+          selector: options[0]
+        };
+      } else {
+        throwError(`Invalid value provider option`);
+      }
+    }
+  }
 }

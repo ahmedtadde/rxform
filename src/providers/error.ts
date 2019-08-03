@@ -4,9 +4,10 @@ import {
   getValueFromObject,
   isFunctionOrPromise,
   isPlainObject,
+  nonEmptyArray,
+  nonEmptyString,
   promisifyFunction
 } from '@utils/object';
-import { nonEmptyString } from '@utils/string';
 import { Emitter } from 'mitt';
 export default (
   $formEl: HTMLFormElement,
@@ -44,44 +45,60 @@ export default (
 function handler(formValues: any, ctx: any) {
   isPlainObject(formValues) ||
     throwError('Invalid form values state obj; expected plain object');
-
-  promisifyFunction(ctx.hooksListeners.start, formValues)
+  const formErrors = ctx.formErrors();
+  let validatorInput: any;
+  promisifyFunction(ctx.hookListeners.start, formValues)
     .then(() => {
-      return promisifyFunction(
-        ctx.validatorPredicate,
-        formValues,
-        ctx.formErrors()
-      );
+      return promisifyFunction(ctx.validatorPredicate, formValues, formErrors);
     })
     .then((predicateResult?: any) => {
       return predicateResult
         ? promisifyFunction(ctx.validatorInput, formValues)
         : Promise.resolve(ctx.noop());
     })
-    .then((validatorInput: any) => {
+    .then((input: any) => {
+      validatorInput = input;
       return validatorInput === ctx.noop()
         ? Promise.resolve(ctx.noop())
         : promisifyFunction(ctx.validator, validatorInput, formValues);
     })
     .then((validationResult?: any) => {
-      return validationResult === ctx.noop() || validationResult
+      return validationResult === ctx.noop() ||
+        Boolean(validationResult) === true
         ? Promise.resolve(ctx.ok())
-        : promisifyFunction(ctx.errorMessage, formValues, ctx.formErrors());
+        : promisifyFunction(
+            ctx.errorMessage,
+            validatorInput,
+            formValues,
+            formErrors
+          );
     })
     .then((validationErrorMessage?: any) => {
-      if (validationErrorMessage !== ctx.ok()) {
-        nonEmptyString(ctx.dispatch) ||
-          throwError(
-            "Invalid error provider 'dispatch' option value: expected a string"
-          );
+      nonEmptyString(ctx.dispatch) ||
+        throwError(
+          "Invalid error provider 'dispatch' option value: expected a string"
+        );
+      if (validationErrorMessage === ctx.ok()) {
         const payload = {
-          error: validationErrorMessage,
+          error: null,
           type: ctx.dispatch
         };
         ctx.emitter$.emit('form@error', payload);
-        return promisifyFunction(ctx.hooksListeners.end, payload.error);
+      } else {
+        const payload = {
+          error: {
+            context: {
+              errors: formErrors,
+              input: validatorInput,
+              values: formValues
+            },
+            message: validationErrorMessage
+          },
+          type: ctx.dispatch
+        };
+        ctx.emitter$.emit('form@error', payload);
       }
-      return promisifyFunction(ctx.hooksListeners.end);
+      return promisifyFunction(ctx.hookListeners.end);
     })
     .then(() => true)
     .catch((error: Error) => {
@@ -95,8 +112,7 @@ function getInputFn(options: any) {
     if (nonEmptyString(obj)) return 'is-string';
     if (
       Array.isArray(obj) &&
-      obj.length &&
-      obj.every((item: any) => nonEmptyString(item))
+      nonEmptyArray(obj.filter((item: any) => nonEmptyString(item)))
     ) {
       return 'is-array-of-string';
     }
@@ -118,8 +134,7 @@ function getInputFn(options: any) {
     }
 
     default: {
-      throwError("Invalid error provider 'input' option value");
-      return false;
+      return Icombinator;
     }
   }
 }
@@ -152,14 +167,18 @@ function getErrorMessageFn(options: any) {
     }
 
     default: {
-      throwError("Invalid error provider 'message' option value");
-      return false;
+      nonEmptyString(options.dispatch) ||
+        throwError(
+          "Invalid error provider 'dispatch' option value: expected a string"
+        );
+
+      return Kcombinator(`"${options.dispatch}" error(s)`);
     }
   }
 }
 
 function getErrorBagFn(formEmitterInstance$: Emitter) {
-  let errorBag = null;
+  let errorBag = {};
   formEmitterInstance$.on('form@errors', (payload: any) => {
     errorBag = payload;
   });

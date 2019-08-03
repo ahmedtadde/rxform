@@ -1,4 +1,6 @@
 import registerDOMEvents from '@emitter/dom-events';
+import registerErrorProviders from '@emitter/error-providers';
+import registerErrorsStateStreamingFn from '@emitter/errors-state';
 import registerValueProviders from '@emitter/value-providers';
 import registerValueProvidersRouter from '@emitter/value-providers-router';
 import registerValuesStateStreamingFn from '@emitter/values-state';
@@ -11,7 +13,9 @@ export default (formOptions: any) => {
     registerDOMEvents,
     registerValueProvidersRouter,
     registerValueProviders,
-    registerValuesStateStreamingFn
+    registerValuesStateStreamingFn,
+    registerErrorProviders,
+    registerErrorsStateStreamingFn
   ];
   registrationFns.forEach((fn: any) =>
     fn($formEl as HTMLFormElement, emitter$, formOptions)
