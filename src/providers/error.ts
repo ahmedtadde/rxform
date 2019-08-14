@@ -1,5 +1,7 @@
-import { I as Icombinator, K as Kcombinator } from '@utils/combinators';
-import { throwError } from '@utils/errors';
+import { FormStatusData } from "@src/typings";
+import { I as Icombinator, K as Kcombinator } from "@utils/combinators";
+import { throwError } from "@utils/errors";
+import { not } from "@utils/logic";
 import {
   getValueFromObject,
   isFunctionOrPromise,
@@ -7,8 +9,8 @@ import {
   nonEmptyArray,
   nonEmptyString,
   promisifyFunction
-} from '@utils/object';
-import { Emitter } from 'mitt';
+} from "@utils/object";
+import { Emitter } from "mitt";
 export default (
   $formEl: HTMLFormElement,
   emitter$: Emitter,
@@ -17,9 +19,10 @@ export default (
   const helpers = {
     errorMessage: getErrorMessageFn(formErrorOptionObj),
     formErrors: getErrorBagFn(emitter$),
+    formStatus: getStatusFn(emitter$),
     hookListeners: getHookListeners(formErrorOptionObj),
-    noop: () => Symbol.for('form@error-provider[no-validation]'),
-    ok: () => Symbol.for('form@error-provider[no-errors]'),
+    noop: () => Symbol.for("form@error-provider[no-validation]"),
+    ok: () => Symbol.for("form@error-provider[no-errors]"),
     validator: getValidatorFn(formErrorOptionObj),
     validatorInput: getInputFn(formErrorOptionObj),
     validatorPredicate: getPredicateFn(formErrorOptionObj)
@@ -36,7 +39,7 @@ export default (
     );
 
   emitter$.on(
-    'form@values',
+    "form@values",
     listener(emitter$, Object.assign({}, $formEl, formErrorOptionObj, helpers))
   );
   return true;
@@ -44,92 +47,113 @@ export default (
 
 function handler(formValues: any, ctx: any) {
   isPlainObject(formValues) ||
-    throwError('Invalid form values state obj; expected plain object');
+    throwError("Invalid form values state obj; expected plain object");
   const formErrors = ctx.formErrors();
-  let validatorInput: any;
-  promisifyFunction(ctx.hookListeners.start, formValues)
-    .then(() => {
-      return promisifyFunction(ctx.validatorPredicate, formValues, formErrors);
-    })
-    .then((predicateResult?: any) => {
-      return predicateResult
-        ? promisifyFunction(ctx.validatorInput, formValues)
-        : Promise.resolve(ctx.noop());
-    })
-    .then((input: any) => {
-      validatorInput = input;
-      return validatorInput === ctx.noop()
-        ? Promise.resolve(ctx.noop())
-        : promisifyFunction(ctx.validator, validatorInput, formValues);
-    })
-    .then((validationResult?: any) => {
-      return validationResult === ctx.noop() ||
-        Boolean(validationResult) === true
-        ? Promise.resolve(ctx.ok())
-        : promisifyFunction(
-            ctx.errorMessage,
-            validatorInput,
-            formValues,
-            formErrors
-          );
-    })
-    .then((validationErrorMessage?: any) => {
-      nonEmptyString(ctx.dispatch) ||
-        throwError(
-          "Invalid error provider 'dispatch' option value: expected a string"
+  const formStatus = ctx.formStatus();
+  if (not(formStatus.submitting)) {
+    let validatorInput: any;
+    promisifyFunction(ctx.hookListeners.start, formValues)
+      .then(() => {
+        return promisifyFunction(
+          ctx.validatorPredicate,
+          formValues,
+          formErrors,
+          formStatus
         );
-      if (validationErrorMessage === ctx.ok()) {
-        const payload = {
-          error: null,
-          type: ctx.dispatch
-        };
-        ctx.emitter$.emit('form@error', payload);
-      } else {
-        const payload = {
-          error: {
-            context: {
-              errors: formErrors,
-              input: validatorInput,
-              values: formValues
+      })
+      .then((predicateResult?: any) => {
+        return predicateResult
+          ? promisifyFunction(
+              ctx.validatorInput,
+              formValues,
+              formErrors,
+              formStatus
+            )
+          : Promise.resolve(ctx.noop());
+      })
+      .then((input: any) => {
+        validatorInput = input;
+        return validatorInput === ctx.noop()
+          ? Promise.resolve(ctx.noop())
+          : promisifyFunction(
+              ctx.validator,
+              validatorInput,
+              formValues,
+              formErrors,
+              formStatus
+            );
+      })
+      .then((validationResult?: any) => {
+        return validationResult === ctx.noop() ||
+          Boolean(validationResult) === true
+          ? Promise.resolve(ctx.ok())
+          : promisifyFunction(
+              ctx.errorMessage,
+              validatorInput,
+              formValues,
+              formErrors,
+              formStatus
+            );
+      })
+      .then((validationErrorMessage?: any) => {
+        nonEmptyString(ctx.dispatch) ||
+          throwError(
+            "Invalid error provider 'dispatch' option value: expected a string"
+          );
+        if (validationErrorMessage === ctx.ok()) {
+          const payload = {
+            error: null,
+            type: ctx.dispatch
+          };
+          ctx.emitter$.emit("form@error", payload);
+        } else {
+          const payload = {
+            error: {
+              context: {
+                errors: formErrors,
+                input: validatorInput,
+                status: formStatus,
+                values: formValues
+              },
+              message: validationErrorMessage
             },
-            message: validationErrorMessage
-          },
-          type: ctx.dispatch
-        };
-        ctx.emitter$.emit('form@error', payload);
-      }
-      return promisifyFunction(ctx.hookListeners.end);
-    })
-    .then(() => true)
-    .catch((error: Error) => {
-      throwError(error);
-    });
+            type: ctx.dispatch
+          };
+          ctx.emitter$.emit("form@error", payload);
+        }
+        return promisifyFunction(ctx.hookListeners.end);
+      })
+      .then(() => true)
+      .catch((error: Error) => {
+        throwError(error);
+      });
+  }
 }
 
 function getInputFn(options: any) {
   const valueType = (obj: any) => {
-    if (isFunctionOrPromise(obj)) return 'is-function-or-promise';
-    if (nonEmptyString(obj)) return 'is-string';
+    if (isFunctionOrPromise(obj)) return "is-function-or-promise";
+    if (nonEmptyString(obj)) return "is-string";
     if (
       Array.isArray(obj) &&
       nonEmptyArray(obj.filter((item: any) => nonEmptyString(item)))
     ) {
-      return 'is-array-of-string';
+      return "is-array-of-string";
     }
   };
 
   switch (valueType(options.input)) {
-    case 'is-string': {
+    case "is-string": {
       return (stateValues: any) =>
         getValueFromObject(stateValues, options.input);
     }
-    case 'is-array-of-string': {
+    case "is-array-of-string": {
       return (stateValues: any) =>
         options.input.map((pathSelector: string) =>
           getValueFromObject(stateValues, pathSelector)
         );
     }
-    case 'is-function-or-promise': {
+    case "is-function-or-promise": {
       return options.input;
     }
 
@@ -153,16 +177,16 @@ function getValidatorFn(options: any) {
 
 function getErrorMessageFn(options: any) {
   const valueType = (obj: any) => {
-    if (isFunctionOrPromise(obj)) return 'is-function-or-promise';
-    if (nonEmptyString(obj)) return 'is-string';
+    if (isFunctionOrPromise(obj)) return "is-function-or-promise";
+    if (nonEmptyString(obj)) return "is-string";
   };
 
   switch (valueType(options.message)) {
-    case 'is-string': {
+    case "is-string": {
       return Kcombinator(options.message);
     }
 
-    case 'is-function-or-promise': {
+    case "is-function-or-promise": {
       return options.message;
     }
 
@@ -179,11 +203,20 @@ function getErrorMessageFn(options: any) {
 
 function getErrorBagFn(formEmitterInstance$: Emitter) {
   let errorBag = {};
-  formEmitterInstance$.on('form@errors', (payload: any) => {
+  formEmitterInstance$.on("form@errors", (payload: any) => {
     errorBag = payload;
   });
 
   return Kcombinator(errorBag);
+}
+
+function getStatusFn(formEmitterInstance$: Emitter) {
+  let status: FormStatusData = { fields: {}, submitting: false };
+  formEmitterInstance$.on("form@status", (payload: FormStatusData) => {
+    status = payload;
+  });
+
+  return Kcombinator(status);
 }
 
 function getHookListeners(options: any) {

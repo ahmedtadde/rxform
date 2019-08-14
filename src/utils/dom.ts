@@ -1,12 +1,12 @@
 import {
   DOMFieldElementsType,
   EmitterDOMEventConfig,
-  EventEmitterListerner
-} from '@lib-types';
-import { throwError } from '@utils/errors';
-import { not } from '@utils/logic';
-import { isNil, isNumber, nonEmptyString } from '@utils/object';
-import { Emitter } from 'mitt';
+  EventEmitterListener
+} from "@lib-types";
+import { throwError } from "@utils/errors";
+import { not } from "@utils/logic";
+import { isNil, isNumber, nonEmptyString } from "@utils/object";
+import { Emitter } from "mitt";
 
 export function isInputElement(value: any) {
   return value instanceof HTMLInputElement;
@@ -35,12 +35,12 @@ export function isFormFieldElement(value: any) {
 }
 
 export function domSelector(selector: string, from?: Element): Element | void {
-  const queryString = nonEmptyString(selector) ? selector : '';
+  const queryString = nonEmptyString(selector) ? selector : "";
   const provider = ($sourceEl: Element | Document) => {
     const $matchedElement = $sourceEl.querySelector(queryString);
     return $matchedElement instanceof Element
       ? $matchedElement
-      : throwError('Invalid query selector');
+      : throwError("Invalid query selector");
   };
 
   return from instanceof Element ? provider(from) : provider(document);
@@ -50,14 +50,14 @@ export function domSelectorAll(
   selector: string,
   from?: Element
 ): Element[] | void {
-  const queryString = nonEmptyString(selector) ? selector : '';
+  const queryString = nonEmptyString(selector) ? selector : "";
   const provider = ($sourceEl: Element | Document) => {
     const $matchedElements = Array.from(
       $sourceEl.querySelectorAll(queryString)
     );
     return $matchedElements.length
       ? $matchedElements
-      : throwError('Invalid query selector');
+      : throwError("Invalid query selector");
   };
 
   return from instanceof Element ? provider(from) : provider(document);
@@ -68,7 +68,7 @@ export const getFormElement = (
 ): HTMLFormElement | void => {
   const assertFormElement = (value: any): void => {
     if (not(isFormElement(value))) {
-      throwError('Invalid form target value');
+      throwError("Invalid form target value");
     }
   };
 
@@ -89,14 +89,14 @@ export function addDOMListener(
   event: string,
   listener: EventListenerOrEventListenerObject,
   options?: EventListenerOptions | boolean
-): EventEmitterListerner {
+): EventEmitterListener {
   const $el = target instanceof Element ? target : domSelector(target);
   if (not($el instanceof Element)) {
-    throwError('Invalid target param... resolved to non DOM element');
+    throwError("Invalid target param... resolved to non DOM element");
   }
 
   ($el as Element).addEventListener(event, listener, options || {});
-  return (...args: any[]): void =>
+  return (_: any): void =>
     ($el as Element).removeEventListener(event, listener, options || {});
 }
 
@@ -107,10 +107,12 @@ export function emitterDomEvents(
 ): Emitter {
   domEvents.forEach((domEvent: EmitterDOMEventConfig): void => {
     const { type, registerAs, options = {} } = domEvent;
-    const listener: EventListenerOrEventListenerObject = (e: Event) =>
+    const listener: EventListenerOrEventListenerObject = (e: Event) => {
+      e.preventDefault();
       emitter$.emit(registerAs, e);
+    };
     const cleanup = addDOMListener(element, type, listener, options);
-    emitter$.on('form@remove-dom-listeners', cleanup);
+    emitter$.on("form@remove-dom-listeners", cleanup);
   });
 
   return emitter$;
@@ -118,7 +120,7 @@ export function emitterDomEvents(
 
 export function getFormFieldElementValue($el: DOMFieldElementsType) {
   if (isNil($el) || not(isFormFieldElement($el))) {
-    throwError('Invalid form field element param');
+    throwError("Invalid form field element param");
   }
 
   if ($el instanceof HTMLInputElement) {
@@ -136,21 +138,21 @@ export function getFormFieldElementValue($el: DOMFieldElementsType) {
 
 export function getInputFieldElementValue($el: HTMLInputElement) {
   if (not($el instanceof HTMLInputElement)) {
-    throwError('Invalid form field element param');
+    throwError("Invalid form field element param");
   }
   const parser = ($field: HTMLInputElement) => {
     switch ($field.type) {
-      case 'image':
-      case 'file':
-      case 'button':
-      case 'reset':
-      case 'submit':
+      case "image":
+      case "file":
+      case "button":
+      case "reset":
+      case "submit":
         return null;
-      case 'number':
+      case "number":
         return Number($field.value);
-      case 'checkbox':
+      case "checkbox":
         return $field.checked ? $field.value : null;
-      case 'radio':
+      case "radio":
         return $field.checked ? $field.value : null;
       default:
         return $field.value;
@@ -161,7 +163,7 @@ export function getInputFieldElementValue($el: HTMLInputElement) {
 
 export function getSelectFieldElementValue($el: HTMLSelectElement) {
   if (not($el instanceof HTMLSelectElement)) {
-    throwError('Invalid form field element param');
+    throwError("Invalid form field element param");
   }
   const parser = ($field: HTMLSelectElement) => {
     const singleValue = ($target: HTMLSelectElement) => {
@@ -198,7 +200,7 @@ export function getSelectFieldElementValue($el: HTMLSelectElement) {
 
 export function getTextAreaFieldElementValue($el: HTMLTextAreaElement) {
   if (not($el instanceof HTMLTextAreaElement)) {
-    throwError('Invalid form field element param');
+    throwError("Invalid form field element param");
   }
   return $el.value;
 }

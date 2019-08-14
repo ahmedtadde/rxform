@@ -1,14 +1,14 @@
-import { DOMEvents, DOMEventsType } from '@src/typings';
-import { throwError } from '@utils/errors';
+import { DOMEvents, DOMEventsType } from "@src/typings";
+import { throwError } from "@utils/errors";
 import {
   isBoolean,
   isPlainObject,
   nonEmptyArray,
   nonEmptyString
-} from '@utils/object';
-import { Emitter } from 'mitt';
+} from "@utils/object";
+import { Emitter } from "mitt";
 export const router = (
-  _: HTMLFormElement,
+  $formElement: HTMLFormElement,
   emitter$: Emitter,
   formOptions: any
 ): Emitter => {
@@ -28,7 +28,7 @@ export const router = (
           events: getProviderEventSources(providerOptionObj, formDOMEvents),
           selector: nonEmptyString(providerOptionObj.selector)
             ? providerOptionObj.selector
-            : throwError('Invalid value provider DOM selector value')
+            : throwError("Invalid value provider DOM selector value")
         };
       }
     );
@@ -65,6 +65,8 @@ export const router = (
       routeFormEventToProvider(emitter$, providers)
     )
   );
+
+  emitter$.on(`form@${DOMEvents.RESET}`, () => $formElement.reset());
   return emitter$;
 };
 
@@ -77,7 +79,7 @@ function getProviderEventSources(
     eventsFilter: Array<string | DOMEvents>
   ) => {
     const { events: providedEvents } = optionsObj;
-    if (providedEvents === false) return ['submit'];
+    if (providedEvents === false) return ["submit"];
 
     const events =
       Array.isArray(providedEvents) && providedEvents.length
@@ -95,9 +97,9 @@ function getProviderEventSources(
 
   const resolver = (extractedEvents: Array<string | DOMEvents>) => {
     if (Array.isArray(extractedEvents) && extractedEvents.length) {
-      return extractedEvents.concat('submit');
+      return extractedEvents.concat("submit");
     } else if (Array.isArray(extractedEvents)) {
-      return ['blur', 'change', 'submit'];
+      return ["blur", "change", "submit"];
     }
 
     throwError(
@@ -114,8 +116,8 @@ function getProviderEventSources(
 
 function standardizeValueProviderOptionsObj(options: any) {
   const optionsType = (obj: any) => {
-    if (nonEmptyString(obj)) return 'is-string';
-    if (isPlainObject(obj)) return 'is-plain-object';
+    if (nonEmptyString(obj)) return "is-string";
+    if (isPlainObject(obj)) return "is-plain-object";
     if (
       Array.isArray(obj) &&
       nonEmptyArray(
@@ -124,20 +126,20 @@ function standardizeValueProviderOptionsObj(options: any) {
           .filter((item: any) => nonEmptyString(item) || isBoolean(item))
       )
     ) {
-      return 'is-array';
+      return "is-array";
     }
   };
 
   switch (optionsType(options)) {
-    case 'is-string': {
+    case "is-string": {
       return { selector: options };
     }
 
-    case 'is-plain-object': {
+    case "is-plain-object": {
       return options;
     }
 
-    case 'is-array': {
+    case "is-array": {
       if (options.length === 1) {
         return { selector: options[0] };
       } else if (options.length === 2) {

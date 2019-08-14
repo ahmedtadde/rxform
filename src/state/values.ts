@@ -1,11 +1,12 @@
-import { I as Icombinator } from '@utils/combinators';
-import { throwError } from '@utils/errors';
+import { I as Icombinator } from "@utils/combinators";
+import { throwError } from "@utils/errors";
+import { not } from "@utils/logic";
 import {
   isFunctionOrPromise,
   isPlainObject,
   promisifyFunction
-} from '@utils/object';
-import { Emitter } from 'mitt';
+} from "@utils/object";
+import { Emitter } from "mitt";
 export default (emitter$: Emitter, formValuesOptions: any) => {
   const helpers = {
     getStates: getStatesGenerator(formValuesOptions),
@@ -26,6 +27,14 @@ export default (emitter$: Emitter, formValuesOptions: any) => {
     );
 
   emitter$.on(`form@value`, listener(emitter$, formValuesOptions, helpers));
+  emitter$.on(`form@reset`, (payload: any) => {
+    const states = helpers.getStates(
+      not(payload instanceof Event) && isPlainObject(payload)
+        ? payload
+        : getInitialState(formValuesOptions)
+    );
+    emitter$.emit("form@values", states.current);
+  });
 
   return listener;
 };
@@ -41,9 +50,9 @@ function handler(newValue: { type: string; value: any | any[] }, ctx: any) {
     })
     .then((newComputedState: any) => {
       isPlainObject(newComputedState) ||
-        throwError('Invalid state values data; expected plain object');
+        throwError("Invalid state values data; expected plain object");
       const states = ctx.getStates(newComputedState);
-      ctx.emitter$.emit('form@values', states.current);
+      ctx.emitter$.emit("form@values", states.current);
       return promisifyFunction(ctx.hookListeners.after, {
         currentState: states.current,
         previousState: states.previous

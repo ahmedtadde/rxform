@@ -1,9 +1,10 @@
 export enum DOMEvents {
-  FOCUS = 'focus',
-  INPUT = 'input',
-  CHANGE = 'change',
-  BLUR = 'blur',
-  SUBMIT = 'submit'
+  FOCUS = "focus",
+  INPUT = "input",
+  CHANGE = "change",
+  BLUR = "blur",
+  SUBMIT = "submit",
+  RESET = "reset"
 }
 
 export type DOMFieldElementsType =
@@ -16,7 +17,8 @@ export type DOMEventsType =
   | DOMEvents.INPUT
   | DOMEvents.BLUR
   | DOMEvents.CHANGE
-  | DOMEvents.SUBMIT;
+  | DOMEvents.SUBMIT
+  | DOMEvents.RESET;
 
 export type DOMFieldEventsType =
   | DOMEvents.INPUT
@@ -29,4 +31,9 @@ export interface EmitterDOMEventConfig {
   options?: EventListenerOptions | boolean;
 }
 
-export type EventEmitterListerner = (...args: any[]) => any;
+export type EventEmitterListener = (...args: any[]) => any;
+
+export interface FormStatusData {
+  fields: { [fieldName: string]: any };
+  submitting: boolean;
+}

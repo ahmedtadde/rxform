@@ -1,11 +1,12 @@
-import { I as Icombinator } from '@utils/combinators';
-import { throwError } from '@utils/errors';
+import { I as Icombinator } from "@utils/combinators";
+import { throwError } from "@utils/errors";
+import { not } from "@utils/logic";
 import {
   isFunctionOrPromise,
   isPlainObject,
   promisifyFunction
-} from '@utils/object';
-import { Emitter } from 'mitt';
+} from "@utils/object";
+import { Emitter } from "mitt";
 export default (emitter$: Emitter, formErrorsOptions: any) => {
   const helpers = {
     getStates: getStatesGenerator(formErrorsOptions),
@@ -17,7 +18,7 @@ export default (emitter$: Emitter, formErrorsOptions: any) => {
     emitterInstance$: Emitter,
     optionsObj: any,
     helperFnsObj: any
-  ) => (newValue: { type: string; value: any | any[] }) =>
+  ) => (newValue: { type: string; value: any }) =>
     handler(
       newValue,
       Object.assign({}, optionsObj, helperFnsObj, {
@@ -26,11 +27,17 @@ export default (emitter$: Emitter, formErrorsOptions: any) => {
     );
 
   emitter$.on(`form@error`, listener(emitter$, formErrorsOptions, helpers));
+  emitter$.on(`form@reset`, (payload: any) => {
+    const states = helpers.getStates(
+      not(payload instanceof Event) && isPlainObject(payload) ? payload : {}
+    );
+    emitter$.emit("form@errors", states.current);
+  });
 
   return listener;
 };
 
-function handler(newValue: { type: string; value: any | any[] }, ctx: any) {
+function handler(newValue: { type: string; value: any }, ctx: any) {
   const currentState = ctx.getStates().current;
   promisifyFunction(ctx.hookListeners.before, {
     currentState,
@@ -43,7 +50,7 @@ function handler(newValue: { type: string; value: any | any[] }, ctx: any) {
       isPlainObject(newComputedState) ||
         throwError("Invalid errors' state data; expected plain object");
       const states = ctx.getStates(newComputedState);
-      ctx.emitter$.emit('form@errors', states.current);
+      ctx.emitter$.emit("form@errors", states.current);
       return promisifyFunction(ctx.hookListeners.after, {
         currentState: states.current,
         previousState: states.previous
