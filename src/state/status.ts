@@ -3,9 +3,9 @@ import {
   DOMEventsType,
   DOMFieldElementsType,
   FormStatusData
-} from "@src/typings";
+} from "@lib-types";
 import { throwError } from "@utils/errors";
-import { isPlainObject, nonEmptyString } from "@utils/object";
+import { isBoolean, isPlainObject, nonEmptyString } from "@utils/object";
 import { Emitter } from "mitt";
 export default (emitter$: Emitter) => {
   let status: FormStatusData = {
@@ -70,5 +70,20 @@ export default (emitter$: Emitter) => {
   formDOMEvents.forEach((formDOMEventType: DOMEventsType) =>
     emitter$.on(`form@${formDOMEventType}`, handler(emitter$))
   );
+
+  emitter$.on(`set-status`, (payload: any) => {
+    isPlainObject(payload) || throwError("Invalid status' state object");
+    isPlainObject(payload.fields) ||
+      throwError(
+        "Invalid status' state object; 'fields' prop is required and its value must be a plain object"
+      );
+    isBoolean(payload.submitting) ||
+      throwError(
+        "Invalid status' state object; 'submitting' prop is required and its value must be boolean"
+      );
+    status = payload;
+    emitter$.emit("form@status", payload);
+  });
+
   return emitter$;
 };

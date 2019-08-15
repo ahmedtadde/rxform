@@ -1,4 +1,4 @@
-import { DOMEvents, DOMEventsType } from "@src/typings";
+import { DOMEvents, DOMEventsType } from "@lib-types";
 import { throwError } from "@utils/errors";
 import {
   isBoolean,

@@ -188,12 +188,8 @@ export function getSelectFieldElementValue($el: HTMLSelectElement) {
           return isNil(option.value) ? option.text : option.value;
         });
     };
-    switch ($field.multiple) {
-      case false:
-        return singleValue($field);
-      default:
-        return multipleValues($field);
-    }
+
+    return $field.multiple ? multipleValues($field) : singleValue($field);
   };
   return parser($el);
 }

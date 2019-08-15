@@ -1,6 +1,5 @@
 import { I as Icombinator } from "@utils/combinators";
 import { throwError } from "@utils/errors";
-import { not } from "@utils/logic";
 import {
   isFunctionOrPromise,
   isPlainObject,
@@ -27,10 +26,14 @@ export default (emitter$: Emitter, formErrorsOptions: any) => {
     );
 
   emitter$.on(`form@error`, listener(emitter$, formErrorsOptions, helpers));
-  emitter$.on(`form@reset`, (payload: any) => {
-    const states = helpers.getStates(
-      not(payload instanceof Event) && isPlainObject(payload) ? payload : {}
-    );
+  emitter$.on(`form@reset`, () => {
+    const states = helpers.getStates({});
+    emitter$.emit("form@errors", states.current);
+  });
+
+  emitter$.on(`set-errors`, (payload: any) => {
+    isPlainObject(payload) || throwError("Invalid errors' state object");
+    const states = helpers.getStates(payload);
     emitter$.emit("form@errors", states.current);
   });
 

@@ -1,4 +1,4 @@
-import { FormStatusData } from "@src/typings";
+import { FormStatusData } from "@lib-types";
 import { I as Icombinator, K as Kcombinator } from "@utils/combinators";
 import { throwError } from "@utils/errors";
 import { not } from "@utils/logic";

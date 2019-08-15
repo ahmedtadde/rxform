@@ -36,6 +36,12 @@ export default (emitter$: Emitter, formValuesOptions: any) => {
     emitter$.emit("form@values", states.current);
   });
 
+  emitter$.on(`set-values`, (payload: any) => {
+    isPlainObject(payload) || throwError("Invalid values' state object");
+    const states = helpers.getStates(payload);
+    emitter$.emit("form@values", states.current);
+  });
+
   return listener;
 };
 
