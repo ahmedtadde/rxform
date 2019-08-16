@@ -5,7 +5,13 @@ import {
   FormStatusData
 } from "@lib-types";
 import { throwError } from "@utils/errors";
-import { isBoolean, isPlainObject, nonEmptyString } from "@utils/object";
+import { log } from "@utils/logger";
+import {
+  // deepFreeze,
+  isBoolean,
+  isPlainObject,
+  nonEmptyString
+} from "@utils/object";
 import { Emitter } from "mitt";
 export default (emitter$: Emitter) => {
   let status: FormStatusData = {
@@ -20,6 +26,11 @@ export default (emitter$: Emitter) => {
     DOMEvents.RESET
   ];
   const handler = (formEmitter$: Emitter) => (evt: Event) => {
+    log.warning(
+      "[FORM STATUS] frozen and won't accept modifications",
+      Object.isFrozen(status),
+      status
+    );
     const $el = evt.target as DOMFieldElementsType;
     nonEmptyString($el.name) ||
       throwError(
@@ -64,7 +75,11 @@ export default (emitter$: Emitter) => {
       };
     }
 
-    formEmitter$.emit("form@status", status);
+    formEmitter$.emit(
+      "form@status",
+      status
+      // deepFreeze(Object.assign({}, { ...status }))
+    );
   };
 
   formDOMEvents.forEach((formDOMEventType: DOMEventsType) =>
@@ -82,7 +97,8 @@ export default (emitter$: Emitter) => {
         "Invalid status' state object; 'submitting' prop is required and its value must be boolean"
       );
     status = payload;
-    emitter$.emit("form@status", payload);
+    // deepFreeze(Object.assign({}, { ...status }))
+    emitter$.emit("form@status", status);
   });
 
   return emitter$;

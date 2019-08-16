@@ -3,6 +3,7 @@ import { K as Kcombinator } from "@utils/combinators";
 import { throwError } from "@utils/errors";
 import { log } from "@utils/logger";
 import {
+  deepFreeze,
   getValueFromObject,
   isFunctionOrPromise,
   isPlainObject,
@@ -20,11 +21,11 @@ export default (
   };
 
   const context = {
-    dispatch: {
+    dispatch: deepFreeze({
       errors: update("errors"),
       status: update("status"),
       values: update("values")
-    },
+    }),
     errors: getFormErrorsStateFn(emitter$),
     handler: getFormSubmissionHandler(formOptions),
     status: getFormStatusStateFn(emitter$),
@@ -67,7 +68,7 @@ function getFormValuesStateFn(formEmitterInstance$: Emitter, options: any) {
 }
 
 function getFormErrorsStateFn(formEmitterInstance$: Emitter) {
-  let errors = {};
+  let errors = deepFreeze({});
   formEmitterInstance$.on("form@errors", (payload: any) => {
     errors = payload;
   });
@@ -76,7 +77,10 @@ function getFormErrorsStateFn(formEmitterInstance$: Emitter) {
 }
 
 function getFormStatusStateFn(formEmitterInstance$: Emitter) {
-  let status: FormStatusData = { fields: {}, submitting: false };
+  let status = deepFreeze({ fields: {}, submitting: false }) as Readonly<
+    FormStatusData
+  >;
+
   formEmitterInstance$.on("form@status", (payload: FormStatusData) => {
     status = payload;
   });
@@ -87,6 +91,6 @@ function getFormStatusStateFn(formEmitterInstance$: Emitter) {
 function getInitialState(options: any) {
   const state = getValueFromObject(options, "values.state");
   return isPlainObject(state)
-    ? options.state
+    ? deepFreeze(state)
     : throwError("Invalid initial values' state");
 }

@@ -2,6 +2,7 @@ import { I as Icombinator } from "@utils/combinators";
 import { throwError } from "@utils/errors";
 import { not } from "@utils/logic";
 import {
+  deepFreeze,
   isFunctionOrPromise,
   isPlainObject,
   promisifyFunction
@@ -72,7 +73,7 @@ function handler(newValue: { type: string; value: any | any[] }, ctx: any) {
 
 function getInitialState(options: any) {
   return isPlainObject(options.state)
-    ? options.state
+    ? deepFreeze(options.state)
     : throwError("Invalid initial values' state");
 }
 
@@ -99,9 +100,12 @@ function getHookListeners(options: any) {
   );
 }
 
-function getStatesGenerator(options: any) {
-  let states = {
-    current: getInitialState(options),
+function getStatesGenerator(options?: any) {
+  let states: {
+    current: Readonly<{ [key: string]: Readonly<any> }>;
+    previous: Readonly<{ [key: string]: Readonly<any> } | null>;
+  } = {
+    current: getInitialState(options) as Readonly<any>,
     previous: null
   };
 
@@ -110,10 +114,12 @@ function getStatesGenerator(options: any) {
       return states;
     }
 
-    states = {
-      current: args[0],
-      previous: states.current
-    };
+    if (isPlainObject(args[0])) {
+      states = {
+        current: deepFreeze(args[0]),
+        previous: states.current
+      };
+    }
 
     return states;
   };

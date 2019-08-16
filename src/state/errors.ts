@@ -1,6 +1,7 @@
 import { I as Icombinator } from "@utils/combinators";
 import { throwError } from "@utils/errors";
 import {
+  deepFreeze,
   isFunctionOrPromise,
   isPlainObject,
   promisifyFunction
@@ -66,7 +67,7 @@ function handler(newValue: { type: string; value: any }, ctx: any) {
 }
 
 function getInitialState(options: any) {
-  return isPlainObject(options.state) ? options.state : {};
+  return deepFreeze(isPlainObject(options.state) ? options.state : {});
 }
 
 function getReducer(options: any) {
@@ -94,8 +95,8 @@ function getHookListeners(options: any) {
 
 function getStatesGenerator(options?: any) {
   let states: {
-    current: { [key: string]: any };
-    previous: { [key: string]: any } | null;
+    current: Readonly<{ [key: string]: Readonly<any> }>;
+    previous: Readonly<{ [key: string]: Readonly<any> } | null>;
   } = {
     current: getInitialState(options),
     previous: null
@@ -106,10 +107,12 @@ function getStatesGenerator(options?: any) {
       return states;
     }
 
-    states = {
-      current: args[0],
-      previous: states.current
-    };
+    if (isPlainObject(args[0])) {
+      states = {
+        current: deepFreeze(args[0]),
+        previous: states.current
+      };
+    }
 
     return states;
   };

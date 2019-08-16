@@ -77,6 +77,8 @@ export const promisifyFunction = (fn: any, ...args: any[]) => {
   });
 };
 
+const nonFrozenObject = (obj: any) => not(Object.isFrozen(obj));
+
 export const getValueFromObject = (obj: any, path: string): any => {
   const decomposePath = (selectorPath: string) => {
     nonEmptyString(selectorPath) ||
@@ -132,3 +134,21 @@ export const getValueFromObject = (obj: any, path: string): any => {
 
   return obj;
 };
+
+export function deepFreeze(obj: any): Readonly<any> {
+  const nonPrimitiveType = (x: any) =>
+    not(isNil(x)) && (Array.isArray(x) || isObject(x) || isFunction(x));
+
+  Object.freeze(obj);
+  Object.getOwnPropertyNames(obj).forEach((key: string) => {
+    const shouldFreeze =
+      obj.hasOwnProperty(key) &&
+      nonPrimitiveType(obj[key]) &&
+      nonFrozenObject(obj[key]);
+    if (shouldFreeze) {
+      deepFreeze(obj[key]);
+    }
+  });
+
+  return obj as Readonly<any>;
+}

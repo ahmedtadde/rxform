@@ -8,6 +8,7 @@ import {
 } from "@utils/dom";
 import { not } from "@utils/logic";
 import {
+  deepFreeze,
   isBoolean,
   isFunctionOrPromise,
   isPlainObject,
@@ -88,12 +89,12 @@ function handler(evt: Event, ctx: any) {
         return transformValues(ctx.transformer, extractedValues);
       })
       .then(transformedValues => {
-        const payload = {
+        const payload = deepFreeze({
           type: ctx.dispatch || ctx.selector,
           value: ctx.parseAsArray() ? transformedValues : transformedValues[0]
-        };
+        });
         ctx.emitter$.emit("form@value", payload);
-        return promisifyFunction(ctx.hookListeners.end, payload.value);
+        return promisifyFunction(ctx.hookListeners.end, payload);
       })
       .then(() => true)
       .catch((error: Error) => {
@@ -119,8 +120,8 @@ async function parseValues(parserFn: any, $elements: DOMFieldElementsType[]) {
 
 async function transformValues(transformerFn: any, extractedValues: any[]) {
   return Promise.all(
-    extractedValues.map(extractedValue => {
-      return promisifyFunction(transformerFn, extractedValue);
+    extractedValues.map((extractedValue: any) => {
+      return promisifyFunction(transformerFn, deepFreeze(extractedValue));
     })
   );
 }
@@ -204,7 +205,10 @@ function standardizeFormValueOptions(options: any) {
 }
 
 function getStatusFn(formEmitterInstance$: Emitter) {
-  let status: FormStatusData = { fields: {}, submitting: false };
+  let status = deepFreeze({
+    fields: {},
+    submitting: false
+  }) as Readonly<FormStatusData>;
   formEmitterInstance$.on("form@status", (payload: FormStatusData) => {
     status = payload;
   });

@@ -3,6 +3,7 @@ import { I as Icombinator, K as Kcombinator } from "@utils/combinators";
 import { throwError } from "@utils/errors";
 import { not } from "@utils/logic";
 import {
+  deepFreeze,
   getValueFromObject,
   isFunctionOrPromise,
   isPlainObject,
@@ -52,7 +53,12 @@ function handler(formValues: any, ctx: any) {
   const formStatus = ctx.formStatus();
   if (not(formStatus.submitting)) {
     let validatorInput: any;
-    promisifyFunction(ctx.hookListeners.start, formValues)
+    promisifyFunction(
+      ctx.hookListeners.start,
+      formValues,
+      formErrors,
+      formStatus
+    )
       .then(() => {
         return promisifyFunction(
           ctx.validatorPredicate,
@@ -72,7 +78,7 @@ function handler(formValues: any, ctx: any) {
           : Promise.resolve(ctx.noop());
       })
       .then((input: any) => {
-        validatorInput = input;
+        validatorInput = deepFreeze(input);
         return validatorInput === ctx.noop()
           ? Promise.resolve(ctx.noop())
           : promisifyFunction(
@@ -101,13 +107,14 @@ function handler(formValues: any, ctx: any) {
             "Invalid error provider 'dispatch' option value: expected a string"
           );
         if (validationErrorMessage === ctx.ok()) {
-          const payload = {
+          const payload = deepFreeze({
             error: null,
             type: ctx.dispatch
-          };
+          });
           ctx.emitter$.emit("form@error", payload);
+          return promisifyFunction(ctx.hookListeners.end, payload);
         } else {
-          const payload = {
+          const payload = deepFreeze({
             error: {
               context: {
                 errors: formErrors,
@@ -118,10 +125,10 @@ function handler(formValues: any, ctx: any) {
               message: validationErrorMessage
             },
             type: ctx.dispatch
-          };
+          });
           ctx.emitter$.emit("form@error", payload);
+          return promisifyFunction(ctx.hookListeners.end, payload);
         }
-        return promisifyFunction(ctx.hookListeners.end);
       })
       .then(() => true)
       .catch((error: Error) => {
@@ -202,7 +209,7 @@ function getErrorMessageFn(options: any) {
 }
 
 function getErrorBagFn(formEmitterInstance$: Emitter) {
-  let errorBag = {};
+  let errorBag = deepFreeze({});
   formEmitterInstance$.on("form@errors", (payload: any) => {
     errorBag = payload;
   });
@@ -211,7 +218,11 @@ function getErrorBagFn(formEmitterInstance$: Emitter) {
 }
 
 function getStatusFn(formEmitterInstance$: Emitter) {
-  let status: FormStatusData = { fields: {}, submitting: false };
+  let status = deepFreeze({
+    fields: {},
+    submitting: false
+  }) as Readonly<FormStatusData>;
+
   formEmitterInstance$.on("form@status", (payload: FormStatusData) => {
     status = payload;
   });
