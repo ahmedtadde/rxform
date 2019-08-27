@@ -3,16 +3,11 @@ import {
   DOMEventsType,
   DOMFieldElementsType,
   FormStatusData
-} from "@lib-types";
-import { throwError } from "@utils/errors";
-import { log } from "@utils/logger";
-import {
-  // deepFreeze,
-  isBoolean,
-  isPlainObject,
-  nonEmptyString
-} from "@utils/object";
-import { Emitter } from "mitt";
+} from '@lib-types';
+import { throwError } from '@utils/errors';
+import { isBoolean, isPlainObject, nonEmptyString } from '@utils/object';
+import deepmerge from 'deepmerge';
+import { Emitter } from 'mitt';
 export default (emitter$: Emitter) => {
   let status: FormStatusData = {
     fields: {},
@@ -26,11 +21,6 @@ export default (emitter$: Emitter) => {
     DOMEvents.RESET
   ];
   const handler = (formEmitter$: Emitter) => (evt: Event) => {
-    log.warning(
-      "[FORM STATUS] frozen and won't accept modifications",
-      Object.isFrozen(status),
-      status
-    );
     const $el = evt.target as DOMFieldElementsType;
     nonEmptyString($el.name) ||
       throwError(
@@ -39,12 +29,12 @@ export default (emitter$: Emitter) => {
 
     const mapEventToFieldStatus = (fieldDOMEvent: Event) => {
       switch (fieldDOMEvent.type) {
-        case "blur":
-          return ["touched"];
-        case "change":
-          return ["modified"];
-        case "submit":
-          return ["touched", "modified"];
+        case 'blur':
+          return ['touched'];
+        case 'change':
+          return ['modified'];
+        case 'submit':
+          return ['touched', 'modified'];
         default:
           return [];
       }
@@ -66,20 +56,16 @@ export default (emitter$: Emitter) => {
       fieldStatusObj
     );
 
-    if (evt.type === "submit") {
+    if (evt.type === 'submit') {
       status.submitting = true;
-    } else if (evt.type === "reset") {
+    } else if (evt.type === 'reset') {
       status = {
         fields: {},
         submitting: false
       };
     }
 
-    formEmitter$.emit(
-      "form@status",
-      status
-      // deepFreeze(Object.assign({}, { ...status }))
-    );
+    formEmitter$.emit('form@status', deepmerge({}, status));
   };
 
   formDOMEvents.forEach((formDOMEventType: DOMEventsType) =>
@@ -97,8 +83,7 @@ export default (emitter$: Emitter) => {
         "Invalid status' state object; 'submitting' prop is required and its value must be boolean"
       );
     status = payload;
-    // deepFreeze(Object.assign({}, { ...status }))
-    emitter$.emit("form@status", status);
+    emitter$.emit('form@status', deepmerge({}, status));
   });
 
   return emitter$;

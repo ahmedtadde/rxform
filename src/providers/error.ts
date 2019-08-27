@@ -1,7 +1,7 @@
-import { FormStatusData } from "@lib-types";
-import { I as Icombinator, K as Kcombinator } from "@utils/combinators";
-import { throwError } from "@utils/errors";
-import { not } from "@utils/logic";
+import { FormStatusData } from '@lib-types';
+import { I as Icombinator, K as Kcombinator } from '@utils/combinators';
+import { throwError } from '@utils/errors';
+import { not } from '@utils/logic';
 import {
   deepFreeze,
   getValueFromObject,
@@ -10,8 +10,9 @@ import {
   nonEmptyArray,
   nonEmptyString,
   promisifyFunction
-} from "@utils/object";
-import { Emitter } from "mitt";
+} from '@utils/object';
+import deepmerge from 'deepmerge';
+import { Emitter } from 'mitt';
 export default (
   $formEl: HTMLFormElement,
   emitter$: Emitter,
@@ -22,8 +23,8 @@ export default (
     formErrors: getErrorBagFn(emitter$),
     formStatus: getStatusFn(emitter$),
     hookListeners: getHookListeners(formErrorOptionObj),
-    noop: () => Symbol.for("form@error-provider[no-validation]"),
-    ok: () => Symbol.for("form@error-provider[no-errors]"),
+    noop: () => Symbol.for('form@error-provider[no-validation]'),
+    ok: () => Symbol.for('form@error-provider[no-errors]'),
     validator: getValidatorFn(formErrorOptionObj),
     validatorInput: getInputFn(formErrorOptionObj),
     validatorPredicate: getPredicateFn(formErrorOptionObj)
@@ -40,7 +41,7 @@ export default (
     );
 
   emitter$.on(
-    "form@values",
+    'form@values',
     listener(emitter$, Object.assign({}, $formEl, formErrorOptionObj, helpers))
   );
   return true;
@@ -48,7 +49,7 @@ export default (
 
 function handler(formValues: any, ctx: any) {
   isPlainObject(formValues) ||
-    throwError("Invalid form values state obj; expected plain object");
+    throwError('Invalid form values state obj; expected plain object');
   const formErrors = ctx.formErrors();
   const formStatus = ctx.formStatus();
   if (not(formStatus.submitting)) {
@@ -78,7 +79,7 @@ function handler(formValues: any, ctx: any) {
           : Promise.resolve(ctx.noop());
       })
       .then((input: any) => {
-        validatorInput = deepFreeze(input);
+        validatorInput = input;
         return validatorInput === ctx.noop()
           ? Promise.resolve(ctx.noop())
           : promisifyFunction(
@@ -107,14 +108,18 @@ function handler(formValues: any, ctx: any) {
             "Invalid error provider 'dispatch' option value: expected a string"
           );
         if (validationErrorMessage === ctx.ok()) {
-          const payload = deepFreeze({
+          const payload = {
             error: null,
             type: ctx.dispatch
-          });
-          ctx.emitter$.emit("form@error", payload);
-          return promisifyFunction(ctx.hookListeners.end, payload);
+          };
+
+          ctx.emitter$.emit('form@error', payload);
+          return promisifyFunction(
+            ctx.hookListeners.end,
+            deepmerge({}, payload)
+          );
         } else {
-          const payload = deepFreeze({
+          const payload = {
             error: {
               context: {
                 errors: formErrors,
@@ -125,9 +130,12 @@ function handler(formValues: any, ctx: any) {
               message: validationErrorMessage
             },
             type: ctx.dispatch
+          };
+          ctx.emitter$.emit('form@error', payload);
+          return promisifyFunction(ctx.hookListeners.end, {
+            error: payload.error.message,
+            type: payload.type
           });
-          ctx.emitter$.emit("form@error", payload);
-          return promisifyFunction(ctx.hookListeners.end, payload);
         }
       })
       .then(() => true)
@@ -139,28 +147,28 @@ function handler(formValues: any, ctx: any) {
 
 function getInputFn(options: any) {
   const valueType = (obj: any) => {
-    if (isFunctionOrPromise(obj)) return "is-function-or-promise";
-    if (nonEmptyString(obj)) return "is-string";
+    if (isFunctionOrPromise(obj)) return 'is-function-or-promise';
+    if (nonEmptyString(obj)) return 'is-string';
     if (
       Array.isArray(obj) &&
       nonEmptyArray(obj.filter((item: any) => nonEmptyString(item)))
     ) {
-      return "is-array-of-string";
+      return 'is-array-of-string';
     }
   };
 
   switch (valueType(options.input)) {
-    case "is-string": {
+    case 'is-string': {
       return (stateValues: any) =>
         getValueFromObject(stateValues, options.input);
     }
-    case "is-array-of-string": {
+    case 'is-array-of-string': {
       return (stateValues: any) =>
         options.input.map((pathSelector: string) =>
           getValueFromObject(stateValues, pathSelector)
         );
     }
-    case "is-function-or-promise": {
+    case 'is-function-or-promise': {
       return options.input;
     }
 
@@ -184,16 +192,16 @@ function getValidatorFn(options: any) {
 
 function getErrorMessageFn(options: any) {
   const valueType = (obj: any) => {
-    if (isFunctionOrPromise(obj)) return "is-function-or-promise";
-    if (nonEmptyString(obj)) return "is-string";
+    if (isFunctionOrPromise(obj)) return 'is-function-or-promise';
+    if (nonEmptyString(obj)) return 'is-string';
   };
 
   switch (valueType(options.message)) {
-    case "is-string": {
+    case 'is-string': {
       return Kcombinator(options.message);
     }
 
-    case "is-function-or-promise": {
+    case 'is-function-or-promise': {
       return options.message;
     }
 
@@ -210,7 +218,7 @@ function getErrorMessageFn(options: any) {
 
 function getErrorBagFn(formEmitterInstance$: Emitter) {
   let errorBag = deepFreeze({});
-  formEmitterInstance$.on("form@errors", (payload: any) => {
+  formEmitterInstance$.on('form@errors', (payload: any) => {
     errorBag = payload;
   });
 
@@ -223,7 +231,7 @@ function getStatusFn(formEmitterInstance$: Emitter) {
     submitting: false
   }) as Readonly<FormStatusData>;
 
-  formEmitterInstance$.on("form@status", (payload: FormStatusData) => {
+  formEmitterInstance$.on('form@status', (payload: FormStatusData) => {
     status = payload;
   });
 

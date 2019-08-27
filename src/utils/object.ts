@@ -1,28 +1,29 @@
-import { throwError } from "@utils/errors";
-import { not } from "@utils/logic";
+import { throwError } from '@utils/errors';
+import { not } from '@utils/logic';
+import deepmerge from 'deepmerge';
 
-export const isBoolean = (x: any): boolean => typeof x === "boolean";
+export const isBoolean = (x: any): boolean => typeof x === 'boolean';
 export const isUndefined = (x: any): boolean =>
-  x === undefined && typeof x === "undefined";
-export const isNull = (x: any): boolean => x === null && typeof x === "object";
+  x === undefined && typeof x === 'undefined';
+export const isNull = (x: any): boolean => x === null && typeof x === 'object';
 export const isNil = (x: any): boolean => isNull(x) || isUndefined(x);
 export const isString = (x: any) =>
-  typeof x === "string" || x instanceof String;
+  typeof x === 'string' || x instanceof String;
 
 export const trim = (str: string, direction?: string) => {
   if (not(isString(str))) {
-    throwError("Invalid argument value; value must be a string");
+    throwError('Invalid argument value; value must be a string');
   }
 
   const directionIsValid =
-    typeof direction !== "undefined" &&
-    ["left", "right", "both"].includes(direction);
+    typeof direction !== 'undefined' &&
+    ['left', 'right', 'both'].includes(direction);
 
   if (directionIsValid) {
     switch (direction) {
-      case "left":
+      case 'left':
         return str.trimLeft();
-      case "right":
+      case 'right':
         return str.trimRight();
       default:
         return str.trimRight();
@@ -40,20 +41,20 @@ export const nonEmptyString = (x: any): boolean => {
 };
 
 export const isNumber = (x: any): boolean =>
-  typeof x === "number" && not(isNaN(x));
+  typeof x === 'number' && not(isNaN(x));
 
 export const isObject = (obj: any) => {
-  return obj !== null && not(Array.isArray(obj)) && typeof obj === "object";
+  return obj !== null && not(Array.isArray(obj)) && typeof obj === 'object';
 };
 
 export const isPlainObject = (obj: any) => {
-  return isObject(obj) && obj.constructor.name === "Object";
+  return isObject(obj) && obj.constructor.name === 'Object';
 };
 
 export const nonEmptyArray = (obj: any) => Array.isArray(obj) && obj.length;
 
 export const isFunction = (obj: any): boolean =>
-  typeof obj === "function" && obj instanceof Function;
+  typeof obj === 'function' && obj instanceof Function;
 
 export const isPromise = (obj: any): boolean =>
   isObject(obj) && isFunction(obj.then) && obj instanceof Promise;
@@ -70,14 +71,23 @@ export const promisifyFunction = (fn: any, ...args: any[]) => {
 
   return new Promise((resolve, reject) => {
     try {
-      resolve(fn(...args));
+      resolve(
+        fn(
+          args.map((arg: any) => {
+            return deepmerge(arg, arg);
+          })
+        )
+      );
     } catch (error) {
       reject(error);
     }
   });
 };
 
-const nonFrozenObject = (obj: any) => not(Object.isFrozen(obj));
+export const nonFrozenObject = (obj: any) => not(Object.isFrozen(obj));
+
+export const nonPrimitiveType = (obj: any) =>
+  not(isNil(obj)) && (Array.isArray(obj) || isObject(obj) || isFunction(obj));
 
 export const getValueFromObject = (obj: any, path: string): any => {
   const decomposePath = (selectorPath: string) => {
@@ -85,13 +95,13 @@ export const getValueFromObject = (obj: any, path: string): any => {
       throwError(
         `Invalid obj path expression: ${JSON.stringify(selectorPath)}`
       );
-    return selectorPath.split(".");
+    return selectorPath.split('.');
   };
 
   const standardizeObjKey = (step: string) => {
-    const regex = new RegExp("[[0-9]+]");
-    if (step !== "[]" && regex.test(step)) {
-      return Number(step.replace(/\[/g, "").replace(/\]/g, ""));
+    const regex = new RegExp('[[0-9]+]');
+    if (step !== '[]' && regex.test(step)) {
+      return Number(step.replace(/\[/g, '').replace(/\]/g, ''));
     }
     return step;
   };
@@ -102,17 +112,17 @@ export const getValueFromObject = (obj: any, path: string): any => {
     const standardizedKey: string | number = standardizeObjKey(key);
     if (isNumber(standardizedKey)) {
       Array.isArray(fromObj) ||
-        throwError("Invalid obj; expected an array to extract value by index");
+        throwError('Invalid obj; expected an array to extract value by index');
       return fromObj[standardizedKey];
     } else if (nonEmptyString(standardizedKey)) {
       isPlainObject(fromObj) ||
         throwError(
-          "Invalid obj; expected a plain object to extract value using accessor key"
+          'Invalid obj; expected a plain object to extract value using accessor key'
         );
 
       return fromObj[standardizedKey];
     }
-    throwError("Invalid key to extract value from obj");
+    throwError('Invalid key to extract value from obj');
   };
 
   if (decomposedPath.length === 1) {
@@ -125,7 +135,7 @@ export const getValueFromObject = (obj: any, path: string): any => {
     try {
       return getValueFromObject(
         getValue(obj, decomposedPath[0]),
-        decomposedPath.slice(1).join(".")
+        decomposedPath.slice(1).join('.')
       );
     } catch (error) {
       throwError(error);
@@ -136,19 +146,18 @@ export const getValueFromObject = (obj: any, path: string): any => {
 };
 
 export function deepFreeze(obj: any): Readonly<any> {
-  const nonPrimitiveType = (x: any) =>
-    not(isNil(x)) && (Array.isArray(x) || isObject(x) || isFunction(x));
+  const frozenObject: any = deepmerge(obj, obj);
 
-  Object.freeze(obj);
-  Object.getOwnPropertyNames(obj).forEach((key: string) => {
+  Object.freeze(frozenObject);
+  Object.getOwnPropertyNames(frozenObject).forEach((key: string) => {
     const shouldFreeze =
-      obj.hasOwnProperty(key) &&
-      nonPrimitiveType(obj[key]) &&
-      nonFrozenObject(obj[key]);
+      frozenObject.hasOwnProperty(key) &&
+      nonPrimitiveType(frozenObject[key]) &&
+      nonFrozenObject(frozenObject[key]);
     if (shouldFreeze) {
-      deepFreeze(obj[key]);
+      deepFreeze(frozenObject[key]);
     }
   });
 
-  return obj as Readonly<any>;
+  return frozenObject as Readonly<any>;
 }

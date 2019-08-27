@@ -1,13 +1,14 @@
-import { I as Icombinator } from "@utils/combinators";
-import { throwError } from "@utils/errors";
-import { not } from "@utils/logic";
+import { I as Icombinator } from '@utils/combinators';
+import { throwError } from '@utils/errors';
+import { not } from '@utils/logic';
 import {
   deepFreeze,
   isFunctionOrPromise,
   isPlainObject,
   promisifyFunction
-} from "@utils/object";
-import { Emitter } from "mitt";
+} from '@utils/object';
+import deepmerge from 'deepmerge';
+import { Emitter } from 'mitt';
 export default (emitter$: Emitter, formValuesOptions: any) => {
   const helpers = {
     getStates: getStatesGenerator(formValuesOptions),
@@ -34,13 +35,13 @@ export default (emitter$: Emitter, formValuesOptions: any) => {
         ? payload
         : getInitialState(formValuesOptions)
     );
-    emitter$.emit("form@values", states.current);
+    emitter$.emit('form@values', deepmerge({}, states.current));
   });
 
   emitter$.on(`set-values`, (payload: any) => {
     isPlainObject(payload) || throwError("Invalid values' state object");
     const states = helpers.getStates(payload);
-    emitter$.emit("form@values", states.current);
+    emitter$.emit('form@values', deepmerge({}, states.current));
   });
 
   return listener;
@@ -57,9 +58,9 @@ function handler(newValue: { type: string; value: any | any[] }, ctx: any) {
     })
     .then((newComputedState: any) => {
       isPlainObject(newComputedState) ||
-        throwError("Invalid state values data; expected plain object");
+        throwError('Invalid state values data; expected plain object');
       const states = ctx.getStates(newComputedState);
-      ctx.emitter$.emit("form@values", states.current);
+      ctx.emitter$.emit('form@values', deepmerge({}, states.current));
       return promisifyFunction(ctx.hookListeners.after, {
         currentState: states.current,
         previousState: states.previous

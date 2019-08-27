@@ -1,12 +1,12 @@
-import { DOMFieldElementsType, FormStatusData } from "@lib-types";
-import { throwError } from "@src/utils/errors";
-import { I as Icombinator, K as Kcombinator } from "@utils/combinators";
+import { DOMFieldElementsType, FormStatusData } from '@lib-types';
+import { throwError } from '@src/utils/errors';
+import { I as Icombinator, K as Kcombinator } from '@utils/combinators';
 import {
   domSelectorAll,
   getFormFieldElementValue,
   isFormFieldElement
-} from "@utils/dom";
-import { not } from "@utils/logic";
+} from '@utils/dom';
+import { not } from '@utils/logic';
 import {
   deepFreeze,
   isBoolean,
@@ -15,8 +15,9 @@ import {
   nonEmptyArray,
   nonEmptyString,
   promisifyFunction
-} from "@utils/object";
-import { Emitter } from "mitt";
+} from '@utils/object';
+import deepmerge from 'deepmerge';
+import { Emitter } from 'mitt';
 
 export default (
   $formEl: HTMLFormElement,
@@ -89,12 +90,12 @@ function handler(evt: Event, ctx: any) {
         return transformValues(ctx.transformer, extractedValues);
       })
       .then(transformedValues => {
-        const payload = deepFreeze({
+        const payload = {
           type: ctx.dispatch || ctx.selector,
           value: ctx.parseAsArray() ? transformedValues : transformedValues[0]
-        });
-        ctx.emitter$.emit("form@value", payload);
-        return promisifyFunction(ctx.hookListeners.end, payload);
+        };
+        ctx.emitter$.emit('form@value', payload);
+        return promisifyFunction(ctx.hookListeners.end, deepmerge({}, payload));
       })
       .then(() => true)
       .catch((error: Error) => {
@@ -121,7 +122,7 @@ async function parseValues(parserFn: any, $elements: DOMFieldElementsType[]) {
 async function transformValues(transformerFn: any, extractedValues: any[]) {
   return Promise.all(
     extractedValues.map((extractedValue: any) => {
-      return promisifyFunction(transformerFn, deepFreeze(extractedValue));
+      return promisifyFunction(transformerFn, extractedValue);
     })
   );
 }
@@ -157,8 +158,8 @@ function isValuesArray(options: any) {
 
 function standardizeFormValueOptions(options: any) {
   const optionsType = (obj: any) => {
-    if (nonEmptyString(obj)) return "is-string";
-    if (isPlainObject(obj)) return "is-plain-object";
+    if (nonEmptyString(obj)) return 'is-string';
+    if (isPlainObject(obj)) return 'is-plain-object';
     if (
       Array.isArray(obj) &&
       nonEmptyArray(
@@ -167,20 +168,20 @@ function standardizeFormValueOptions(options: any) {
           .filter((item: any) => nonEmptyString(item) || isBoolean(item))
       )
     ) {
-      return "is-array";
+      return 'is-array';
     }
   };
 
   switch (optionsType(options)) {
-    case "is-string": {
+    case 'is-string': {
       return { selector: options };
     }
 
-    case "is-plain-object": {
+    case 'is-plain-object': {
       return options;
     }
 
-    case "is-array": {
+    case 'is-array': {
       if (options.length === 1) {
         return { selector: options[0] };
       } else if (options.length === 2) {
@@ -209,7 +210,7 @@ function getStatusFn(formEmitterInstance$: Emitter) {
     fields: {},
     submitting: false
   }) as Readonly<FormStatusData>;
-  formEmitterInstance$.on("form@status", (payload: FormStatusData) => {
+  formEmitterInstance$.on('form@status', (payload: FormStatusData) => {
     status = payload;
   });
 
