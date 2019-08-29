@@ -3,7 +3,6 @@ import { I as Icombinator, K as Kcombinator } from '@utils/combinators';
 import { throwError } from '@utils/errors';
 import { not } from '@utils/logic';
 import {
-  deepFreeze,
   getValueFromObject,
   isFunctionOrPromise,
   isPlainObject,
@@ -11,7 +10,6 @@ import {
   nonEmptyString,
   promisifyFunction
 } from '@utils/object';
-import deepmerge from 'deepmerge';
 import { Emitter } from 'mitt';
 export default (
   $formEl: HTMLFormElement,
@@ -114,10 +112,7 @@ function handler(formValues: any, ctx: any) {
           };
 
           ctx.emitter$.emit('form@error', payload);
-          return promisifyFunction(
-            ctx.hookListeners.end,
-            deepmerge({}, payload)
-          );
+          return promisifyFunction(ctx.hookListeners.end, payload);
         } else {
           const payload = {
             error: {
@@ -134,6 +129,7 @@ function handler(formValues: any, ctx: any) {
           ctx.emitter$.emit('form@error', payload);
           return promisifyFunction(ctx.hookListeners.end, {
             error: payload.error.message,
+            input: validatorInput,
             type: payload.type
           });
         }
@@ -217,7 +213,7 @@ function getErrorMessageFn(options: any) {
 }
 
 function getErrorBagFn(formEmitterInstance$: Emitter) {
-  let errorBag = deepFreeze({});
+  let errorBag = {};
   formEmitterInstance$.on('form@errors', (payload: any) => {
     errorBag = payload;
   });
@@ -226,10 +222,10 @@ function getErrorBagFn(formEmitterInstance$: Emitter) {
 }
 
 function getStatusFn(formEmitterInstance$: Emitter) {
-  let status = deepFreeze({
+  let status = {
     fields: {},
     submitting: false
-  }) as Readonly<FormStatusData>;
+  };
 
   formEmitterInstance$.on('form@status', (payload: FormStatusData) => {
     status = payload;

@@ -8,7 +8,6 @@ import {
 } from '@utils/dom';
 import { not } from '@utils/logic';
 import {
-  deepFreeze,
   isBoolean,
   isFunctionOrPromise,
   isPlainObject,
@@ -16,7 +15,7 @@ import {
   nonEmptyString,
   promisifyFunction
 } from '@utils/object';
-import deepmerge from 'deepmerge';
+
 import { Emitter } from 'mitt';
 
 export default (
@@ -95,7 +94,7 @@ function handler(evt: Event, ctx: any) {
           value: ctx.parseAsArray() ? transformedValues : transformedValues[0]
         };
         ctx.emitter$.emit('form@value', payload);
-        return promisifyFunction(ctx.hookListeners.end, deepmerge({}, payload));
+        return promisifyFunction(ctx.hookListeners.end, payload);
       })
       .then(() => true)
       .catch((error: Error) => {
@@ -206,10 +205,10 @@ function standardizeFormValueOptions(options: any) {
 }
 
 function getStatusFn(formEmitterInstance$: Emitter) {
-  let status = deepFreeze({
+  let status = {
     fields: {},
     submitting: false
-  }) as Readonly<FormStatusData>;
+  };
   formEmitterInstance$.on('form@status', (payload: FormStatusData) => {
     status = payload;
   });

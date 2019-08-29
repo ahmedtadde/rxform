@@ -7,7 +7,6 @@ import {
   isPlainObject,
   promisifyFunction
 } from '@utils/object';
-import deepmerge from 'deepmerge';
 import { Emitter } from 'mitt';
 export default (emitter$: Emitter, formValuesOptions: any) => {
   const helpers = {
@@ -35,13 +34,13 @@ export default (emitter$: Emitter, formValuesOptions: any) => {
         ? payload
         : getInitialState(formValuesOptions)
     );
-    emitter$.emit('form@values', deepmerge({}, states.current));
+    emitter$.emit('form@values', deepFreeze(states.current));
   });
 
   emitter$.on(`set-values`, (payload: any) => {
     isPlainObject(payload) || throwError("Invalid values' state object");
     const states = helpers.getStates(payload);
-    emitter$.emit('form@values', deepmerge({}, states.current));
+    emitter$.emit('form@values', deepFreeze(states.current));
   });
 
   return listener;
@@ -60,7 +59,7 @@ function handler(newValue: { type: string; value: any | any[] }, ctx: any) {
       isPlainObject(newComputedState) ||
         throwError('Invalid state values data; expected plain object');
       const states = ctx.getStates(newComputedState);
-      ctx.emitter$.emit('form@values', deepmerge({}, states.current));
+      ctx.emitter$.emit('form@values', deepFreeze(states.current));
       return promisifyFunction(ctx.hookListeners.after, {
         currentState: states.current,
         previousState: states.previous

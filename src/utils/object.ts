@@ -1,6 +1,6 @@
 import { throwError } from '@utils/errors';
 import { not } from '@utils/logic';
-import deepmerge from 'deepmerge';
+import deepClone from 'clone-deep';
 
 export const isBoolean = (x: any): boolean => typeof x === 'boolean';
 export const isUndefined = (x: any): boolean =>
@@ -65,19 +65,22 @@ export const isFunctionOrPromise = (x: any): boolean =>
 export const promisifyFunction = (fn: any, ...args: any[]) => {
   if (not(isFunction(fn))) {
     throwError(
-      `function argument is invalid; received value of type ${typeof fn}`
+      `function argument (fn) is invalid; received value of type ${typeof fn}`
     );
   }
 
   return new Promise((resolve, reject) => {
     try {
-      resolve(
-        fn(
-          args.map((arg: any) => {
-            return deepmerge(arg, arg);
-          })
-        )
-      );
+      const inputs = args.map((arg: any) => {
+        const shouldFreeze =
+          nonPrimitiveType(arg) &&
+          not(arg instanceof Element) &&
+          not(arg instanceof Event);
+
+        return shouldFreeze ? deepFreeze(arg) : arg;
+      });
+
+      resolve(fn(...inputs));
     } catch (error) {
       reject(error);
     }
@@ -145,19 +148,29 @@ export const getValueFromObject = (obj: any, path: string): any => {
   return obj;
 };
 
-export function deepFreeze(obj: any): Readonly<any> {
-  const frozenObject: any = deepmerge(obj, obj);
+export function deepFreeze(
+  obj: any,
+  clone?: boolean | undefined
+): Readonly<any> {
+  const input: any = clone === false ? obj : deepClone(obj);
+  const freeze = (someObj: any) => {
+    Object.freeze(someObj);
+    const keys = Object.getOwnPropertyNames(someObj);
 
-  Object.freeze(frozenObject);
-  Object.getOwnPropertyNames(frozenObject).forEach((key: string) => {
-    const shouldFreeze =
-      frozenObject.hasOwnProperty(key) &&
-      nonPrimitiveType(frozenObject[key]) &&
-      nonFrozenObject(frozenObject[key]);
-    if (shouldFreeze) {
-      deepFreeze(frozenObject[key]);
+    for (let index = 0, length = keys.length; index < length; index++) {
+      const key = keys[index];
+      const shouldFreeze =
+        someObj.hasOwnProperty(key) &&
+        nonPrimitiveType(someObj[key]) &&
+        nonFrozenObject(someObj[key]);
+
+      if (shouldFreeze) {
+        freeze(someObj[key]);
+      }
     }
-  });
+  };
 
-  return frozenObject as Readonly<any>;
+  freeze(input);
+
+  return input as Readonly<any>;
 }
