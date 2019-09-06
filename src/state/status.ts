@@ -8,7 +8,7 @@ import { throwError } from '@utils/errors';
 import { log } from '@utils/logger';
 import { not } from '@utils/logic';
 import {
-  deepFreeze,
+  deepClone,
   isBoolean,
   isPlainObject,
   nonEmptyString
@@ -79,14 +79,14 @@ export default (emitter$: Emitter) => {
       };
     }
 
-    formEmitter$.emit('form@status', deepFreeze(status));
+    formEmitter$.emit('form@status', deepClone(status));
   };
 
   formDOMEvents.forEach((formDOMEventType: DOMEventsType) =>
     emitter$.on(`form@${formDOMEventType}`, handler(emitter$))
   );
 
-  emitter$.on(`set-status`, (payload: any) => {
+  emitter$.on('set-status', (payload: any) => {
     isPlainObject(payload) || throwError("Invalid status' state object");
     isPlainObject(payload.fields) ||
       throwError(
@@ -97,7 +97,7 @@ export default (emitter$: Emitter) => {
         "Invalid status' state object; 'submitting' prop is required and its value must be boolean"
       );
     status = payload;
-    emitter$.emit('form@status', deepFreeze(status));
+    emitter$.emit('form@status', deepClone(status));
   });
 
   return emitter$;

@@ -1,8 +1,8 @@
 import buildEmitter from '@emitter/builder';
 import { log } from '@utils/logger';
-import { deepFreeze } from '@utils/object';
+import { deepClone } from '@utils/object';
 const RxForm = (formOptions: any) => {
-  const emitter$ = buildEmitter(deepFreeze(formOptions));
+  const emitter$ = buildEmitter(deepClone(formOptions));
   emitter$.on('form@values', (values: any) => {
     log.info('[FORM VALUES] ', values);
   });

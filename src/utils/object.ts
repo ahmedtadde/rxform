@@ -1,6 +1,6 @@
 import { throwError } from '@utils/errors';
 import { not } from '@utils/logic';
-import deepClone from 'clone-deep';
+import cloneDeep from 'lodash.clonedeep';
 
 export const isBoolean = (x: any): boolean => typeof x === 'boolean';
 export const isUndefined = (x: any): boolean =>
@@ -72,14 +72,12 @@ export const promisifyFunction = (fn: any, ...args: any[]) => {
   return new Promise((resolve, reject) => {
     try {
       const inputs = args.map((arg: any) => {
-        const shouldFreeze =
+        const shouldClone =
           nonPrimitiveType(arg) &&
           not(arg instanceof Element) &&
           not(arg instanceof Event);
-
-        return shouldFreeze ? deepFreeze(arg) : arg;
+        return shouldClone ? deepClone(arg) : arg;
       });
-
       resolve(fn(...inputs));
     } catch (error) {
       reject(error);
@@ -148,29 +146,21 @@ export const getValueFromObject = (obj: any, path: string): any => {
   return obj;
 };
 
-export function deepFreeze(
-  obj: any,
-  clone?: boolean | undefined
-): Readonly<any> {
-  const input: any = clone === false ? obj : deepClone(obj);
-  const freeze = (someObj: any) => {
-    Object.freeze(someObj);
-    const keys = Object.getOwnPropertyNames(someObj);
-
-    for (let index = 0, length = keys.length; index < length; index++) {
-      const key = keys[index];
-      const shouldFreeze =
-        someObj.hasOwnProperty(key) &&
-        nonPrimitiveType(someObj[key]) &&
-        nonFrozenObject(someObj[key]);
-
-      if (shouldFreeze) {
-        freeze(someObj[key]);
-      }
+export function deepFreeze(obj: any): Readonly<any> {
+  Object.freeze(obj);
+  Object.getOwnPropertyNames(obj).forEach((prop: string) => {
+    if (
+      obj.hasOwnProperty(prop) &&
+      obj[prop] !== null &&
+      (typeof obj[prop] === 'object' || typeof obj[prop] === 'function') &&
+      !Object.isFrozen(obj[prop])
+    ) {
+      deepFreeze(obj[prop]);
     }
-  };
+  });
 
-  freeze(input);
-
-  return input as Readonly<any>;
+  return obj as Readonly<any>;
+}
+export function deepClone(obj: any): Readonly<any> {
+  return deepFreeze(cloneDeep(obj));
 }

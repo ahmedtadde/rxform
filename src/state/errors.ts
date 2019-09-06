@@ -1,7 +1,7 @@
 import { I as Icombinator } from '@utils/combinators';
 import { throwError } from '@utils/errors';
 import {
-  deepFreeze,
+  deepClone,
   isFunctionOrPromise,
   isPlainObject,
   promisifyFunction
@@ -26,16 +26,16 @@ export default (emitter$: Emitter, formErrorsOptions: any) => {
       })
     );
 
-  emitter$.on(`form@error`, listener(emitter$, formErrorsOptions, helpers));
-  emitter$.on(`form@reset`, () => {
+  emitter$.on('form@error', listener(emitter$, formErrorsOptions, helpers));
+  emitter$.on('form@reset', () => {
     const states = helpers.getStates({});
-    emitter$.emit('form@errors', deepFreeze(states.current));
+    emitter$.emit('form@errors', deepClone(states.current));
   });
 
-  emitter$.on(`set-errors`, (payload: any) => {
+  emitter$.on('set-errors', (payload: any) => {
     isPlainObject(payload) || throwError("Invalid errors' state object");
     const states = helpers.getStates(payload);
-    emitter$.emit('form@errors', deepFreeze(states.current));
+    emitter$.emit('form@errors', deepClone(states.current));
   });
 
   return listener;
@@ -54,7 +54,7 @@ function handler(newValue: { type: string; value: any }, ctx: any) {
       isPlainObject(newComputedState) ||
         throwError("Invalid errors' state data; expected plain object");
       const states = ctx.getStates(newComputedState);
-      ctx.emitter$.emit('form@errors', deepFreeze(states.current));
+      ctx.emitter$.emit('form@errors', deepClone(states.current));
       return promisifyFunction(ctx.hookListeners.after, {
         currentState: states.current,
         previousState: states.previous
@@ -67,7 +67,7 @@ function handler(newValue: { type: string; value: any }, ctx: any) {
 }
 
 function getInitialState(options: any) {
-  return deepFreeze(isPlainObject(options.state) ? options.state : {});
+  return deepClone(isPlainObject(options.state) ? options.state : {});
 }
 
 function getReducer(options: any) {
@@ -109,7 +109,7 @@ function getStatesGenerator(options?: any) {
 
     if (isPlainObject(args[0])) {
       states = {
-        current: deepFreeze(args[0]),
+        current: deepClone(args[0]),
         previous: states.current
       };
     }

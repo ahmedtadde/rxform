@@ -218,7 +218,7 @@ function getErrorBagFn(formEmitterInstance$: Emitter) {
     errorBag = payload;
   });
 
-  return Kcombinator(errorBag);
+  return () => errorBag;
 }
 
 function getStatusFn(formEmitterInstance$: Emitter) {
@@ -231,7 +231,7 @@ function getStatusFn(formEmitterInstance$: Emitter) {
     status = payload;
   });
 
-  return Kcombinator(status);
+  return () => status;
 }
 
 function getHookListeners(options: any) {

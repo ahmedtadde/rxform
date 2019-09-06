@@ -213,5 +213,5 @@ function getStatusFn(formEmitterInstance$: Emitter) {
     status = payload;
   });
 
-  return Kcombinator(status);
+  return () => status;
 }

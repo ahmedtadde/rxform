@@ -1,5 +1,4 @@
 import { FormStatusData } from '@lib-types';
-import { K as Kcombinator } from '@utils/combinators';
 import { throwError } from '@utils/errors';
 import { log } from '@utils/logger';
 import {
@@ -32,7 +31,7 @@ export default (
   };
 
   const listener = (ctx: any) => (evt: Event) => handler(evt, ctx);
-  emitter$.on(`form@submit`, listener(context));
+  emitter$.on('form@submit', listener(context));
   return emitter$;
 };
 
@@ -62,8 +61,7 @@ function getFormValuesStateFn(formEmitterInstance$: Emitter, options: any) {
   formEmitterInstance$.on('form@values', (payload: any) => {
     values = payload;
   });
-
-  return Kcombinator(values);
+  return () => values;
 }
 
 function getFormErrorsStateFn(formEmitterInstance$: Emitter) {
@@ -72,7 +70,7 @@ function getFormErrorsStateFn(formEmitterInstance$: Emitter) {
     errors = payload;
   });
 
-  return Kcombinator(errors);
+  return () => errors;
 }
 
 function getFormStatusStateFn(formEmitterInstance$: Emitter) {
@@ -80,8 +78,7 @@ function getFormStatusStateFn(formEmitterInstance$: Emitter) {
   formEmitterInstance$.on('form@status', (payload: FormStatusData) => {
     status = payload;
   });
-
-  return Kcombinator(status);
+  return () => status;
 }
 
 function getInitialState(options: any) {

@@ -2,7 +2,7 @@ import { I as Icombinator } from '@utils/combinators';
 import { throwError } from '@utils/errors';
 import { not } from '@utils/logic';
 import {
-  deepFreeze,
+  deepClone,
   isFunctionOrPromise,
   isPlainObject,
   promisifyFunction
@@ -27,20 +27,20 @@ export default (emitter$: Emitter, formValuesOptions: any) => {
       })
     );
 
-  emitter$.on(`form@value`, listener(emitter$, formValuesOptions, helpers));
-  emitter$.on(`form@reset`, (payload: any) => {
+  emitter$.on('form@value', listener(emitter$, formValuesOptions, helpers));
+  emitter$.on('form@reset', (payload: any) => {
     const states = helpers.getStates(
       not(payload instanceof Event) && isPlainObject(payload)
         ? payload
         : getInitialState(formValuesOptions)
     );
-    emitter$.emit('form@values', deepFreeze(states.current));
+    emitter$.emit('form@values', deepClone(states.current));
   });
 
-  emitter$.on(`set-values`, (payload: any) => {
+  emitter$.on('set-values', (payload: any) => {
     isPlainObject(payload) || throwError("Invalid values' state object");
     const states = helpers.getStates(payload);
-    emitter$.emit('form@values', deepFreeze(states.current));
+    emitter$.emit('form@values', deepClone(states.current));
   });
 
   return listener;
@@ -59,7 +59,7 @@ function handler(newValue: { type: string; value: any | any[] }, ctx: any) {
       isPlainObject(newComputedState) ||
         throwError('Invalid state values data; expected plain object');
       const states = ctx.getStates(newComputedState);
-      ctx.emitter$.emit('form@values', deepFreeze(states.current));
+      ctx.emitter$.emit('form@values', deepClone(states.current));
       return promisifyFunction(ctx.hookListeners.after, {
         currentState: states.current,
         previousState: states.previous
@@ -73,7 +73,7 @@ function handler(newValue: { type: string; value: any | any[] }, ctx: any) {
 
 function getInitialState(options: any) {
   return isPlainObject(options.state)
-    ? deepFreeze(options.state)
+    ? deepClone(options.state)
     : throwError("Invalid initial values' state");
 }
 
@@ -116,7 +116,7 @@ function getStatesGenerator(options?: any) {
 
     if (isPlainObject(args[0])) {
       states = {
-        current: deepFreeze(args[0]),
+        current: deepClone(args[0]),
         previous: states.current
       };
     }
