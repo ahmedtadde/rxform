@@ -30,6 +30,7 @@
     "resolveJsonModule": true,
     "paths": {
       "@root/*": ["."],
+      "@/*": ["src/*"],
       "@src/*": ["src/*"],
       "@utils/*": ["src/utils/*"],
       "@lib-types": ["src/typings/index"],

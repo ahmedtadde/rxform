@@ -1,5 +1,5 @@
 import { throwError } from '@utils/errors';
-import { not } from '@utils/logic';
+import { not, toBool } from '@utils/logic';
 import cloneDeep from 'lodash.clonedeep';
 
 export const isBoolean = (x: any): boolean => typeof x === 'boolean';
@@ -51,7 +51,8 @@ export const isPlainObject = (obj: any) => {
   return isObject(obj) && obj.constructor.name === 'Object';
 };
 
-export const nonEmptyArray = (obj: any) => Array.isArray(obj) && obj.length;
+export const nonEmptyArray = (obj: any) =>
+  Array.isArray(obj) && toBool(obj.length);
 
 export const isFunction = (obj: any): boolean =>
   typeof obj === 'function' && obj instanceof Function;
@@ -84,6 +85,8 @@ export const promisifyFunction = (fn: any, ...args: any[]) => {
     }
   });
 };
+export const nonEmptyPlainObject = (obj: any) =>
+  isPlainObject(obj) && toBool(Object.keys(obj).length);
 
 export const nonFrozenObject = (obj: any) => not(Object.isFrozen(obj));
 

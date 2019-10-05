@@ -4,6 +4,7 @@ import { throwError } from '@utils/errors';
 import { not } from '@utils/logic';
 import {
   getValueFromObject,
+  isFunction,
   isFunctionOrPromise,
   isPlainObject,
   nonEmptyArray,
@@ -143,7 +144,7 @@ function handler(formValues: any, ctx: any) {
 
 function getInputFn(options: any) {
   const valueType = (obj: any) => {
-    if (isFunctionOrPromise(obj)) return 'is-function-or-promise';
+    if (isFunction(obj)) return 'is-function';
     if (nonEmptyString(obj)) return 'is-string';
     if (
       Array.isArray(obj) &&
@@ -164,7 +165,7 @@ function getInputFn(options: any) {
           getValueFromObject(stateValues, pathSelector)
         );
     }
-    case 'is-function-or-promise': {
+    case 'is-function': {
       return options.input;
     }
 

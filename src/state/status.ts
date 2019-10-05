@@ -5,7 +5,6 @@ import {
   FormStatusData
 } from '@lib-types';
 import { throwError } from '@utils/errors';
-import { log } from '@utils/logger';
 import { not } from '@utils/logic';
 import {
   deepClone,
@@ -28,12 +27,17 @@ export default (emitter$: Emitter) => {
   ];
 
   const handler = (formEmitter$: Emitter) => (evt: Event) => {
-    if (
-      not(
-        [DOMEvents.SUBMIT, DOMEvents.RESET].includes(evt.type as DOMEventsType)
-      )
-    ) {
-      log.info('form status event handler triggered', evt);
+    const isFormFieldElementStatusChange = not(
+      [DOMEvents.SUBMIT, DOMEvents.RESET].includes(evt.type as DOMEventsType) ||
+        (evt.target instanceof HTMLInputElement &&
+          ['submit', 'reset', 'file', 'button', 'image'].includes(
+            evt.target.type
+          )) ||
+        (evt.target instanceof HTMLButtonElement &&
+          ['submit', 'reset'].includes(evt.target.type))
+    );
+
+    if (isFormFieldElementStatusChange) {
       const $el = evt.target as DOMFieldElementsType | HTMLFormElement;
       nonEmptyString($el.name) ||
         throwError(
