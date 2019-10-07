@@ -38,7 +38,7 @@ function checkFormSubmissionHandler(model: any) {
   if (not(isFunction(onsubmit))) {
     return {
       errors: ['Invalid form submission handler. Expected a function'],
-      reducer: null
+      onsubmit: null
     };
   }
 
@@ -52,20 +52,20 @@ function checkFormSubmissionHandler(model: any) {
 function checkValues(model: any) {
   const { values = {} } = isPlainObject(model) ? model : {};
 
-  const stateValidation = checkState(values);
+  const initialStateValidation = checkInitialState(values);
   const providersValidation = checkProviders(values);
   const reducerValidation = checkReducer(values);
 
   if (
-    nonEmptyArray(stateValidation.errors) ||
+    nonEmptyArray(initialStateValidation.errors) ||
     nonEmptyArray(providersValidation.errors) ||
     nonEmptyArray(reducerValidation.errors)
   ) {
     return {
       errors: ([] as string[])
         .concat(
-          nonEmptyArray(stateValidation.errors)
-            ? (stateValidation.errors as string[])
+          nonEmptyArray(initialStateValidation.errors)
+            ? (initialStateValidation.errors as string[])
             : []
         )
         .concat(
@@ -86,11 +86,12 @@ function checkValues(model: any) {
     errors: null,
     values: {
       providers: providersValidation.providers,
-      state: stateValidation.state
+      reducer: reducerValidation.reducer,
+      state: initialStateValidation.state
     }
   };
 
-  function checkState(input: any) {
+  function checkInitialState(input: any) {
     const { state = {} } = isPlainObject(input) ? input : {};
     if (not(nonEmptyPlainObject(state))) {
       return {
