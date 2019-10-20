@@ -15,9 +15,9 @@ export const trim = (str: string, direction?: string) => {
     throwError('Invalid argument value; value must be a string');
   }
 
-  const directionIsValid =
-    typeof direction !== 'undefined' &&
-    ['left', 'right', 'both'].includes(direction);
+  const directionIsValid = ['left', 'right', 'both'].includes(
+    direction as string
+  );
 
   if (directionIsValid) {
     switch (direction) {
@@ -25,10 +25,13 @@ export const trim = (str: string, direction?: string) => {
         return str.trimLeft();
       case 'right':
         return str.trimRight();
+      case 'both':
+        return str.trim();
       default:
-        return str.trimRight();
+        return str.trim();
     }
   }
+
   return str.trim();
 };
 

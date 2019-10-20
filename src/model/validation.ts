@@ -6,10 +6,40 @@ import {
   isPlainObject,
   nonEmptyArray,
   nonEmptyPlainObject,
-  nonEmptyString
+  nonEmptyString,
+  trim
 } from '@utils/object';
+
 export default function formOptionsValidator(model: any) {
-  return model;
+  const validators = [
+    { prop: 'target', fn: checkDOMTarget },
+    { prop: 'values', fn: checkValues },
+    { prop: 'onsubmit', fn: checkFormSubmissionHandler }
+  ];
+
+  return validators.reduce(
+    (validationResult, validator) => {
+      const validation = validator.fn(model);
+
+      if (nonEmptyArray(validation.errors)) {
+        return Object.assign({}, validationResult, {
+          errors: (validationResult.errors as string[]).concat(
+            validation.errors as string[]
+          )
+        });
+      }
+
+      return Object.assign({}, validationResult, {
+        model: {
+          ...model,
+          [validator.prop]:
+            // @ts-ignore
+            validation[validator.prop]
+        }
+      });
+    },
+    { model: {}, errors: [] }
+  );
 }
 
 function checkDOMTarget(model: any) {
@@ -23,7 +53,7 @@ function checkDOMTarget(model: any) {
 
   try {
     getFormElement(target);
-    return { errors: null, target: target.trim() };
+    return { errors: null, target: trim(target) };
   } catch (error) {
     return {
       errors: ['Invalid target DOM selector. No form element matched.'],
@@ -159,7 +189,9 @@ function checkValues(model: any) {
   function checkProvider(input: any) {
     const optionsType = (obj: any) => {
       if (nonEmptyString(obj)) return 'is-string';
-      if (nonEmptyPlainObject(obj)) return 'is-plain-object';
+      if (nonEmptyPlainObject(obj) && nonEmptyString(obj.selector)) {
+        return 'is-plain-object';
+      }
       if (
         Array.isArray(obj) &&
         nonEmptyArray(
@@ -174,28 +206,34 @@ function checkValues(model: any) {
 
     switch (optionsType(input)) {
       case 'is-string': {
-        return { errors: null, provider: { selector: input } };
+        return { errors: null, provider: { selector: trim(input) } };
       }
 
       case 'is-plain-object': {
-        return { errors: null, provider: input };
+        return {
+          errors: null,
+          provider: { ...input, selector: trim(input.selector) }
+        };
       }
 
       case 'is-array': {
-        if (input.length === 1) {
-          return { errors: null, provider: { selector: input[0] } };
-        } else if (input.length === 2) {
+        if (input.length === 1 && nonEmptyString(input[0])) {
+          return { errors: null, provider: { selector: trim(input[0]) } };
+        } else if (input.length === 2 && nonEmptyString(input[0])) {
           return {
             errors: null,
             provider: Object.assign(
-              {},
               { selector: input[0] },
               nonEmptyString(input[1])
                 ? { dispatch: input[1] }
                 : { multiple: toBool(input[1]) }
             )
           };
-        } else if (input.length === 3) {
+        } else if (
+          input.length === 3 &&
+          nonEmptyString(input[0]) &&
+          nonEmptyString(input[1])
+        ) {
           return {
             errors: null,
             provider: {
@@ -217,7 +255,7 @@ function checkValues(model: any) {
       default: {
         return {
           errors: (providerIdx: number) => [
-            `In values config, provider ${providerIdx} is invalid. Expected a  non empty string, a non empty array, or non empty plain object`
+            `In values config, provider ${providerIdx} is invalid. Provider can be declared using a string (selector), an array [selector, (dispatch | multiple)?, multiple?], or a plain object {selector, dispatch?, events?, transformer?}`
           ],
           provider: null
         };

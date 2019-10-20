@@ -1,10 +1,15 @@
 import modelValidation from '@/model/validation';
 import buildEmitter from '@emitter/builder';
-import { deepClone } from '@utils/object';
+import { throwError } from '@utils/errors';
+import { deepClone, nonEmptyArray } from '@utils/object';
 import EventEmitter, { Emitter } from 'mitt';
 const RxForm = (options: any) => {
-  const formOptions = modelValidation(deepClone(options));
-  let emitter$: Emitter = buildEmitter(formOptions);
+  const { model, errors: err = null } = modelValidation(deepClone(options));
+  if (nonEmptyArray(err)) {
+    throwError((err as string[]).join('; '));
+  }
+
+  let emitter$: Emitter = buildEmitter(model);
   let form$: Emitter = new EventEmitter();
 
   emitter$.on('form@values', (values: any) => {
