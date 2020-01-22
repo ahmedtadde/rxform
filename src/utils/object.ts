@@ -69,7 +69,7 @@ export const isFunctionOrPromise = (x: any): boolean =>
 export const promisifyFunction = (fn: any, ...args: any[]) => {
   if (not(isFunction(fn))) {
     throwError(
-      `function argument (fn) is invalid; received value of type ${typeof fn}`
+      `function argument (fn) is invalid; received value of type ${ typeof fn }`
     );
   }
 
@@ -100,7 +100,7 @@ export const getValueFromObject = (obj: any, path: string): any => {
   const decomposePath = (selectorPath: string) => {
     nonEmptyString(selectorPath) ||
       throwError(
-        `Invalid obj path expression: ${JSON.stringify(selectorPath)}`
+        `Invalid obj path expression: ${ JSON.stringify(selectorPath) }`
       );
     return selectorPath.split('.');
   };
