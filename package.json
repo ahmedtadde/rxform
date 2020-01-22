@@ -9,16 +9,18 @@
     "validation",
     "event-driven"
   ],
-  "main": "lib/rxform.umd.js",
-  "module": "lib/rxform.js",
-  "typings": "lib/types/rxform.d.ts",
+  "main": "dist/rxform.js",
+  "module": "dist/rxform.es.js",
+  "umd:main": "dist/rxform.umd.js",
   "files": [
-    "lib"
+    "src",
+    "dist",
+    "rxform.d.ts"
   ],
-  "author": "metronlabsllc <ahmedtadde@gmail.com>",
+  "author": "Ahmed Tadde <ahmedtadde@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/metronlabsllc/rxform.git"
+    "url": "https://github.com/ahmedtadde/rxform.git"
   },
   "license": "MIT",
   "engines": {
@@ -26,8 +28,8 @@
   },
   "scripts": {
     "lint": "tslint  --project tsconfig.json -t codeFrame 'src/**/*.ts'",
-    "prebuild": "rimraf lib && rimraf browser-testing/rxform.umd.js",
-    "build": "rollup -c rollup.config.ts && rimraf .rpt2_cache && cp lib/rxform.umd.js browser-testing/rxform.umd.js",
+    "prebuild": "rimraf dist",
+    "build": "rollup -c rollup.config.ts && rimraf .rpt2_cache",
     "start": "rollup -c rollup.config.ts -w"
   },
   "devDependencies": {

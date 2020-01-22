@@ -10,7 +10,7 @@ import { getFormElement } from '@utils/dom';
 import EventEmitter, { Emitter } from 'mitt';
 export default (formOptions: any) => {
   const $formEl = getFormElement(formOptions.target);
-  const emitter$: Emitter = new EventEmitter();
+  const emitter$: Emitter = EventEmitter();
   const registrationFns = [
     registerDOMEvents,
     registerValueProvidersRouter,

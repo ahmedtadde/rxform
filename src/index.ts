@@ -10,7 +10,7 @@ const RxForm = (options: any) => {
   }
 
   let emitter$: Emitter = buildEmitter(model);
-  let form$: Emitter = new EventEmitter();
+  let form$: Emitter = EventEmitter();
 
   emitter$.on('form@values', (values: any) => {
     form$.emit('form@values', values);
