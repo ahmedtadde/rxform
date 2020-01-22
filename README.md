@@ -13,7 +13,7 @@
   </a>
 </p>
 
-## Table of Contents
+## Table of Contents [WIP]
 
 -   [Install](#install)
 -   [Usage](#usage)
