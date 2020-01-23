@@ -15,8 +15,6 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    // "declarationDir": "lib/types",
-    // "outFile": "rxform.d.ts",
     "outDir": "dist",
     "typeRoots": [
       "node_modules/@types"

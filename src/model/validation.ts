@@ -165,7 +165,7 @@ function checkValues(model: any) {
             errors: result.errors.concat(
               errors
                 ? errors(idx + 1)
-                : `In values config, provider ${idx + 1} is invalid.`
+                : `In values config, provider ${ idx + 1 } is invalid.`
             )
           });
         }
@@ -249,7 +249,7 @@ function checkValues(model: any) {
         } else {
           return {
             errors: (providerIdx: number) => [
-              `In values config, provider ${providerIdx} is invalid. Array config is malformed`
+              `In values config, provider ${ providerIdx } is invalid. Array config is malformed`
             ],
             provider: null
           };
@@ -259,7 +259,7 @@ function checkValues(model: any) {
       default: {
         return {
           errors: (providerIdx: number) => [
-            `In values config, provider ${providerIdx} is invalid. Provider can be declared using a string (selector), an array [selector, (dispatch | multiple)?, multiple?], or a plain object {selector, dispatch?, events?, transformer?}`
+            `In values config, provider ${ providerIdx } is invalid. Provider can be declared using a string (selector), an array [selector, (dispatch | multiple)?, multiple?], or a plain object {selector, dispatch?, events?, transformer?}`
           ],
           provider: null
         };
@@ -366,7 +366,7 @@ function checkErrors(model: any) {
             errors: result.errors.concat(
               errors
                 ? errors(idx + 1)
-                : `In errors config, provider ${idx + 1} is invalid.`
+                : `In errors config, provider ${ idx + 1 } is invalid.`
             )
           });
         }
@@ -438,7 +438,7 @@ function checkErrors(model: any) {
         } else {
           return {
             errors: (providerIdx: number) => [
-              `In errors config, provider ${providerIdx} is invalid. Array config is malformed`
+              `In errors config, provider ${ providerIdx } is invalid. Array config is malformed`
             ],
             provider: null
           };
@@ -448,7 +448,7 @@ function checkErrors(model: any) {
       default: {
         return {
           errors: (providerIdx: number) => [
-            `In errors config, provider ${providerIdx} is invalid. Provider can   be declared using a string (dispatch), an array [dispatch (string), validator (function), message (string | function)], or a plain  object {dispatch, input?, message?, predicate?, validator?}`
+            `In errors config, provider ${ providerIdx } is invalid. Provider can   be declared using a string (dispatch), an array [dispatch (string), validator (function), message (string | function)], or a plain  object {dispatch, input?, message?, predicate?, validator?}`
           ],
           provider: null
         };

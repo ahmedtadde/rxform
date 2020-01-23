@@ -13,22 +13,30 @@
   </a>
 </p>
 
-## Table of Contents [WIP]
+# RxForm
 
--   [Install](#install)
--   [Usage](#usage)
--   [Examples & Demos](#examples--demos)
--   [API](#api)
--   [Contribute](#contribute)
--   [License](#license)
+> Minimal declarative and event driven form handling library
 
+- **Small:** ${GZIP SIZE TBD}
+- **Declarative:** flexible options to handle simple and complex form logic
+- **Reactive:** form element => stream of `values`, `status`, and `errors` records
+- **Framework Agnostic:** can be used on any JS frontend application.
+
+## Table of Contents
+
+- [Install](#install)
+- [Usage](#usage)
+- [Examples & Demos](#examples--demos)
+- [API](#api)
+- [Contribute](#contribute)
+- [License](#license)
 
 ## Install
 
 This project uses [node](http://nodejs.org) and [npm](https://npmjs.com). Go check them out if you don't have them locally installed.
 
 ```sh
-$ npm install --save rxform
+npm install --save rxform
 ```
 
 Then with a module bundler like [rollup](http://rollupjs.org/) or [webpack](https://webpack.js.org/), use as you would anything else:
@@ -47,16 +55,42 @@ The [UMD](https://github.com/umdjs/umd) build is also available on [unpkg](https
 <script src="https://unpkg.com/rxform/dist/rxform.umd.js"></script>
 ```
 
-You can find the library on `window.RxForm`.
+You can find the library on `window.RxForm`.  
+
+**Note**: The lovely package [`mitt`](https://github.com/developit/mitt) is used for event handling. However, `rxform` does not require installation of `mitt`.
 
 ## Usage
 
+```typescript
+import rxform from 'rxform';
 
-## Examples & Demos
+const config: RxFormConfig = ...
+const form: RxForm  = rxform(config);
 
+form.stream$.on('form@values', (values: any) => {
+  //Inspect new form values state...
+  //Then, update UI or someting...
+});
+
+form.stream$.on('form@status', (status: any) => {
+  //Inspect new form fields' intercation statuses...
+  //Then, update UI or someting...
+});
+
+form.stream$.on('form@errors', (errors: any) => {
+  //Inspect new form errors generated from computed form values...
+  //Then, update UI or someting...
+});
+
+//... When done with form, clean up with
+form.destroy();
+
+
+```
+
+## Examples
 
 ## API
-
 
 ## Contribute
 
@@ -72,21 +106,19 @@ If don't, just open a [new clear and descriptive issue](../../issues/new).
 
 Pull requests are the greatest contributions, so be sure they are focused in scope, and do avoid unrelated commits.
 
--   Fork it!
--   Clone your fork: `git clone https://github.com/<your-username>/rxform`
--   Navigate to the newly cloned directory: `cd rxform`
--   Create a new branch for the new feature: `git checkout -b my-new-feature`
--   Install the tools necessary for development: `npm install`
--   Make your changes.
--   Commit your changes: `git commit -am 'Add some feature'`
--   Push to the branch: `git push origin my-new-feature`
--   Submit a pull request with full remarks documenting your changes.
+- Fork it!
+- Clone your fork: `git clone https://github.com/<your-username>/rxform`
+- Navigate to the newly cloned directory: `cd rxform`
+- Create a new branch for the new feature: `git checkout -b my-new-feature`
+- Install the tools necessary for development: `npm install`
+- Make your changes.
+- Commit your changes: `git commit -am 'Add some feature'`
+- Push to the branch: `git push origin my-new-feature`
+- Submit a pull request with full remarks documenting your changes.
 
 ## License
 
-
 [MIT License](https://opensource.org/licenses/MIT) © [Ahmed Tadde](https://ahmedtadde.com/)
-
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

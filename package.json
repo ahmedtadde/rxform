@@ -14,8 +14,7 @@
   "umd:main": "dist/rxform.umd.js",
   "files": [
     "src",
-    "dist",
-    "rxform.d.ts"
+    "dist"
   ],
   "author": "Ahmed Tadde <ahmedtadde@gmail.com>",
   "repository": {
