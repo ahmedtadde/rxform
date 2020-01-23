@@ -77,10 +77,8 @@ export type FormErrorsReducerPayload = {
 export type FormErrorsReducer = (previousState: FormErrors, payload: FormErrorsReducerPayload) => FormErrors;
 
 
-export type FormStatusKind = 'touched' | 'modfified';
-
 export type FormStatus = {
-  fields: { [name: string]: Record<FormStatusKind, boolean> };
+  fields: { [name: string]: Record<string, boolean> };
   submitting: boolean;
 };
 
