@@ -1,4 +1,4 @@
-import { DOMFieldElementsType, FormStatusData } from '@lib-types';
+import { DOMFieldElementsType, FormStatus } from '@lib-types';
 import { throwError } from '@src/utils/errors';
 import { I as Icombinator, K as Kcombinator } from '@utils/combinators';
 import {
@@ -39,15 +39,15 @@ export default (
     optionsObj: any,
     helperFnsObj: any
   ) => (evt: Event) =>
-    handler(
-      evt,
-      Object.assign({}, optionsObj, helperFnsObj, {
-        emitter$: emitterInstance$
-      })
-    );
+      handler(
+        evt,
+        Object.assign({}, optionsObj, helperFnsObj, {
+          emitter$: emitterInstance$
+        })
+      );
 
   emitter$.on(
-    `form@provider[selector="${standardizedFormValueOptions.selector}"]`,
+    `form@provider[selector="${ standardizedFormValueOptions.selector }"]`,
     listener(
       emitter$,
       Object.assign({}, $formEl, standardizedFormValueOptions),
@@ -67,12 +67,12 @@ function handler(evt: Event, ctx: any) {
     !$targetElements.length ||
     !$targetElements.every(($e: Element) => isFormFieldElement($e))
   ) {
-    throwError(`Invalid target element(s) for selector ${ctx.selector}`);
+    throwError(`Invalid target element(s) for selector ${ ctx.selector }`);
   }
 
   if (!ctx.parseAsArray() && $targetElements.length !== 1) {
     throwError(
-      `Invalid selector ${ctx.selector}; must target single form field element`
+      `Invalid selector ${ ctx.selector }; must target single form field element`
     );
   }
 
@@ -110,7 +110,7 @@ async function parseValues(parserFn: any, $elements: DOMFieldElementsType[]) {
         const name =
           $el.name ||
           throwError(
-            `Target element has no name attribute: ${JSON.stringify($el)}`
+            `Target element has no name attribute: ${ JSON.stringify($el) }`
           );
         return { name, value: extractedValue };
       });
@@ -209,7 +209,7 @@ function getStatusFn(formEmitterInstance$: Emitter) {
     fields: {},
     submitting: false
   };
-  formEmitterInstance$.on('form@status', (payload: FormStatusData) => {
+  formEmitterInstance$.on('form@status', (payload: FormStatus) => {
     status = payload;
   });
 

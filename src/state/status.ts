@@ -2,7 +2,7 @@ import {
   DOMEvents,
   DOMEventsType,
   DOMFieldElementsType,
-  FormStatusData
+  FormStatus
 } from '@lib-types';
 import { throwError } from '@utils/errors';
 import { not } from '@utils/logic';
@@ -14,7 +14,7 @@ import {
 } from '@utils/object';
 import { Emitter } from 'mitt';
 export default (emitter$: Emitter) => {
-  let status: FormStatusData = {
+  let status: FormStatus = {
     fields: {},
     submitting: false
   };
@@ -29,19 +29,19 @@ export default (emitter$: Emitter) => {
   const handler = (formEmitter$: Emitter) => (evt: Event) => {
     const isFormFieldElementStatusChange = not(
       [DOMEvents.SUBMIT, DOMEvents.RESET].includes(evt.type as DOMEventsType) ||
-        (evt.target instanceof HTMLInputElement &&
-          ['submit', 'reset', 'file', 'button', 'image'].includes(
-            evt.target.type
-          )) ||
-        (evt.target instanceof HTMLButtonElement &&
-          ['submit', 'reset'].includes(evt.target.type))
+      (evt.target instanceof HTMLInputElement &&
+        ['submit', 'reset', 'file', 'button', 'image'].includes(
+          evt.target.type
+        )) ||
+      (evt.target instanceof HTMLButtonElement &&
+        ['submit', 'reset'].includes(evt.target.type))
     );
 
     if (isFormFieldElementStatusChange) {
       const $el = evt.target as DOMFieldElementsType | HTMLFormElement;
       nonEmptyString($el.name) ||
         throwError(
-          `Target element has no name attribute: ${JSON.stringify($el)}`
+          `Target element has no name attribute: ${ JSON.stringify($el) }`
         );
 
       const mapEventToFieldStatus = (fieldDOMEvent: Event) => {
@@ -87,7 +87,7 @@ export default (emitter$: Emitter) => {
   };
 
   formDOMEvents.forEach((formDOMEventType: DOMEventsType) =>
-    emitter$.on(`form@${formDOMEventType}`, handler(emitter$))
+    emitter$.on(`form@${ formDOMEventType }`, handler(emitter$))
   );
 
   emitter$.on('set-status', (payload: any) => {

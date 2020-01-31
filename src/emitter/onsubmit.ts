@@ -1,4 +1,4 @@
-import { FormStatusData } from '@lib-types';
+import { FormStatus } from '@lib-types';
 import { throwError } from '@utils/errors';
 import { log } from '@utils/logger';
 import {
@@ -14,8 +14,8 @@ export default (
   formOptions: any
 ): Emitter => {
   const update = (target: 'values' | 'errors' | 'status') => (payload: any) => {
-    isPlainObject(payload) || throwError(`Invalid ${target}' state object`);
-    emitter$.emit(`set-${target}`, payload);
+    isPlainObject(payload) || throwError(`Invalid ${ target }' state object`);
+    emitter$.emit(`set-${ target }`, payload);
   };
 
   const context = {
@@ -75,7 +75,7 @@ function getFormErrorsStateFn(formEmitterInstance$: Emitter) {
 
 function getFormStatusStateFn(formEmitterInstance$: Emitter) {
   let status = { fields: {}, submitting: false };
-  formEmitterInstance$.on('form@status', (payload: FormStatusData) => {
+  formEmitterInstance$.on('form@status', (payload: FormStatus) => {
     status = payload;
   });
   return () => status;

@@ -3,14 +3,17 @@ import buildEmitter from '@emitter/builder';
 import { throwError } from '@utils/errors';
 import { deepClone, nonEmptyArray } from '@utils/object';
 import EventEmitter, { Emitter } from 'mitt';
-const RxForm = (options: any) => {
-  const { model, errors: err = null } = modelValidation(deepClone(options));
+import { RxForm, RxFormConfig } from './typings';
+
+
+const rxfrom = (config: RxFormConfig): RxForm => {
+  const { model, errors: err = null } = modelValidation(deepClone(config));
   if (nonEmptyArray(err)) {
     throwError((err as string[]).join('; '));
   }
 
   let emitter$: Emitter = buildEmitter(model);
-  let form$: Emitter = new EventEmitter();
+  let form$: Emitter = EventEmitter();
 
   emitter$.on('form@values', (values: any) => {
     form$.emit('form@values', values);
@@ -43,7 +46,8 @@ const RxForm = (options: any) => {
     }
   };
 
-  return { form$, destroy };
+  return { stream$: form$, destroy };
 };
 
-export default RxForm;
+export default rxfrom;
+module.exports = rxfrom;
