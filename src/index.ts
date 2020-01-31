@@ -3,12 +3,10 @@ import buildEmitter from '@emitter/builder';
 import { throwError } from '@utils/errors';
 import { deepClone, nonEmptyArray } from '@utils/object';
 import EventEmitter, { Emitter } from 'mitt';
+import { RxForm, RxFormConfig } from './typings';
 
-interface RxFormConfig {
-  target: string | HTMLFormElement
-}
 
-const RxForm = (config: RxFormConfig) => {
+const rxfrom = (config: RxFormConfig): RxForm => {
   const { model, errors: err = null } = modelValidation(deepClone(config));
   if (nonEmptyArray(err)) {
     throwError((err as string[]).join('; '));
@@ -51,5 +49,5 @@ const RxForm = (config: RxFormConfig) => {
   return { stream$: form$, destroy };
 };
 
-export default RxForm;
-module.exports = RxForm;
+export default rxfrom;
+module.exports = rxfrom;

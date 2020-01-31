@@ -402,8 +402,7 @@ function checkErrors(model: any) {
         Array.isArray(obj) &&
         obj
           .slice(0, 3)
-          .filter((item: any) => nonEmptyString(item) || isFunction(item))
-          .length === 3
+          .filter((item: any) => nonEmptyString(item) || isFunction(item)).length >= 2
       ) {
         return 'is-array';
       }
@@ -423,6 +422,19 @@ function checkErrors(model: any) {
 
       case 'is-array': {
         if (
+          input.length === 2 &&
+          nonEmptyString(input[0]) &&
+          isFunction(input[1])
+        ) {
+          return {
+            errors: null,
+            provider: {
+              dispatch: input[0],
+              validator: input[1]
+            }
+          };
+        } else if (
+          input.length === 3 &&
           nonEmptyString(input[0]) &&
           isFunction(input[1]) &&
           (isFunction(input[2]) || nonEmptyString(input[2]))

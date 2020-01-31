@@ -54,12 +54,12 @@ export type FormValuesReducer = (previousState: FormValues, payload: FormValuesR
 
 
 export type FormErrors = Record<string, Readonly<any>>;
-export type FormErrorsProvider = string | [string, string | ((...args: any[]) => string), (...args: any[]) => boolean] | {
+export type FormErrorsProvider = string | [string, (...args: any[]) => boolean] | [string, (...args: any[]) => boolean, string | ((...args: any[]) => string)] | {
   dispatch: string;
   message?: string | ((input?: any, values?: FormValues, errors?: FormErrors, status?: FormStatus) => string);
   validator?: (input?: any, values?: FormValues, errors?: FormErrors, status?: FormStatus) => boolean;
-  validatorPredicate?: (values?: FormValues, errors?: FormErrors, status?: FormStatus) => boolean;
-  validatorInput?: (values?: FormValues, errors?: FormErrors, status?: FormStatus) => any;
+  predicate?: (values?: FormValues, errors?: FormErrors, status?: FormStatus) => boolean;
+  input?: string | string[] | ((values?: FormValues, errors?: FormErrors, status?: FormStatus) => any);
 }
 
 export type FormErrorsReducerPayload = {

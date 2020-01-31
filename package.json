@@ -1,7 +1,7 @@
 {
   "name": "rxform",
-  "version": "0.0.0",
-  "description": "Declarative and Event Driven Form Handling",
+  "version": "0.1.0",
+  "description": "Framework agnostic, declarative and event driven form handling",
   "keywords": [
     "form",
     "reactive",
@@ -12,11 +12,13 @@
   "main": "dist/rxform.js",
   "module": "dist/rxform.es.js",
   "umd:main": "dist/rxform.umd.js",
+  "types": "./index.d.ts",
   "files": [
     "src",
-    "dist"
+    "dist",
+    "index.d.ts"
   ],
-  "author": "Ahmed Tadde <ahmedtadde@gmail.com>",
+  "author": "Ahmed Tadde <ahmedtadde@gmail.com> (http://github.com/ahmedtadde)",
   "repository": {
     "type": "git",
     "url": "https://github.com/ahmedtadde/rxform.git"
@@ -28,16 +30,17 @@
   "scripts": {
     "lint": "tslint  --project tsconfig.json -t codeFrame 'src/**/*.ts'",
     "prebuild": "rimraf dist",
-    "build": "rollup -c rollup.config.ts && rimraf .rpt2_cache",
+    "build": "rollup -c rollup.config.ts && rimraf .rpt2_cache && npx bundlesize",
     "start": "rollup -c rollup.config.ts -w"
   },
   "devDependencies": {
-    "@babel/core": "^7.8.3",
+    "@babel/core": "^7.8.4",
     "@types/lodash.clonedeep": "^4.5.6",
-    "@types/node": "^13.1.8",
+    "@types/node": "^13.5.3",
+    "bundlesize": "^0.18.0",
     "prettier": "^1.19.1",
-    "rimraf": "^3.0.0",
-    "rollup": "^1.29.1",
+    "rimraf": "^3.0.1",
+    "rollup": "^1.30.1",
     "rollup-plugin-analyzer": "^3.2.2",
     "rollup-plugin-babel": "^4.3.3",
     "rollup-plugin-commonjs": "^10.1.0",
@@ -55,8 +58,23 @@
     "tslint-microsoft-contrib": "^6.2.0",
     "typescript": "^3.7.5"
   },
+  "typings": "./index.d.ts",
   "dependencies": {
     "lodash.clonedeep": "^4.5.0",
     "mitt": "^1.2.0"
-  }
+  },
+  "bundlesize": [
+    {
+      "path": "dist/rxform.umd.js",
+      "maxSize": "10kB"
+    },
+    {
+      "path": "dist/rxform.es.js",
+      "maxSize": "10kB"
+    },
+    {
+      "path": "dist/rxform.js",
+      "maxSize": "10kB"
+    }
+  ]
 }
