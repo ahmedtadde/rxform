@@ -14,7 +14,7 @@
   "umd:main": "dist/rxform.umd.js",
   "types": "./index.d.ts",
   "files": [
-    "dist",
+    "dist/**/*",
     "index.d.ts"
   ],
   "author": "Ahmed Tadde <ahmedtadde@gmail.com> (http://github.com/ahmedtadde)",
