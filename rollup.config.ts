@@ -15,12 +15,23 @@ export default {
   input: 'src/index.ts',
   output: [
     {
-      file: pkg.main,
+      file: pkg['umd:main'],
       format: 'umd',
       name: libraryName,
       sourcemap: false
     },
-    { file: pkg.module, format: 'es', sourcemap: true }
+    {
+      file: pkg.module,
+      format: 'es',
+      name: libraryName,
+      sourcemap: true
+    },
+    {
+      file: pkg.main,
+      format: 'cjs',
+      name: libraryName,
+      sourcemap: true
+    }
   ],
   plugins: [
     // Compile TypeScript files

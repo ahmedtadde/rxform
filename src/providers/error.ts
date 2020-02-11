@@ -1,4 +1,4 @@
-import { FormStatusData } from '@lib-types';
+import { FormStatus } from '@lib-types';
 import { I as Icombinator, K as Kcombinator } from '@utils/combinators';
 import { throwError } from '@utils/errors';
 import { not } from '@utils/logic';
@@ -70,11 +70,11 @@ function handler(formValues: any, ctx: any) {
       .then((predicateResult?: any) => {
         return predicateResult
           ? promisifyFunction(
-              ctx.validatorInput,
-              formValues,
-              formErrors,
-              formStatus
-            )
+            ctx.validatorInput,
+            formValues,
+            formErrors,
+            formStatus
+          )
           : Promise.resolve(ctx.noop());
       })
       .then((input: any) => {
@@ -82,24 +82,24 @@ function handler(formValues: any, ctx: any) {
         return validatorInput === ctx.noop()
           ? Promise.resolve(ctx.noop())
           : promisifyFunction(
-              ctx.validator,
-              validatorInput,
-              formValues,
-              formErrors,
-              formStatus
-            );
+            ctx.validator,
+            validatorInput,
+            formValues,
+            formErrors,
+            formStatus
+          );
       })
       .then((validationResult?: any) => {
         return validationResult === ctx.noop() ||
           Boolean(validationResult) === true
           ? Promise.resolve(ctx.ok())
           : promisifyFunction(
-              ctx.errorMessage,
-              validatorInput,
-              formValues,
-              formErrors,
-              formStatus
-            );
+            ctx.errorMessage,
+            validatorInput,
+            formValues,
+            formErrors,
+            formStatus
+          );
       })
       .then((validationErrorMessage?: any) => {
         nonEmptyString(ctx.dispatch) ||
@@ -208,7 +208,7 @@ function getErrorMessageFn(options: any) {
           "Invalid error provider 'dispatch' option value: expected a string"
         );
 
-      return Kcombinator(`"${options.dispatch}" error(s)`);
+      return Kcombinator(`"${ options.dispatch }" error(s)`);
     }
   }
 }
@@ -228,7 +228,7 @@ function getStatusFn(formEmitterInstance$: Emitter) {
     submitting: false
   };
 
-  formEmitterInstance$.on('form@status', (payload: FormStatusData) => {
+  formEmitterInstance$.on('form@status', (payload: FormStatus) => {
     status = payload;
   });
 

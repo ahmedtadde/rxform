@@ -18,13 +18,13 @@ export default (emitter$: Emitter, formErrorsOptions: any) => {
     emitterInstance$: Emitter,
     optionsObj: any,
     helperFnsObj: any
-  ) => (newValue: { type: string; value: any }) =>
-    handler(
-      newValue,
-      Object.assign({}, optionsObj, helperFnsObj, {
-        emitter$: emitterInstance$
-      })
-    );
+  ) => (newValue: { type: string; error: { context: Record<string, any>, message: string } }) =>
+      handler(
+        newValue,
+        Object.assign({}, optionsObj, helperFnsObj, {
+          emitter$: emitterInstance$
+        })
+      );
 
   emitter$.on('form@error', listener(emitter$, formErrorsOptions, helpers));
   emitter$.on('form@reset', () => {
@@ -41,7 +41,7 @@ export default (emitter$: Emitter, formErrorsOptions: any) => {
   return listener;
 };
 
-function handler(newValue: { type: string; value: any }, ctx: any) {
+function handler(newValue: { type: string; error: { context: Record<string, any>, message: string } }, ctx: any) {
   const currentState = ctx.getStates().current;
   promisifyFunction(ctx.hookListeners.before, {
     currentState,
