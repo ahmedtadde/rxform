@@ -15,7 +15,7 @@
 
 [![gzip size](http://img.badgesize.io/https://unpkg.com/rxform@latest/dist/rxform.umd.js?compression=gzip)](https://unpkg.com/rxform@latest/dist/rxform.umd.js) [![license](https://badgen.now.sh/badge/license/MIT)](./LICENSE)
 
-# RxForm
+# RxForm [WIP]
 
 > Minimal , declarative, and event driven form handling library
 
