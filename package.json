@@ -1,7 +1,7 @@
 {
   "name": "rxform",
   "version": "0.1.0",
-  "description": "Framework agnostic, declarative and event driven form handling",
+  "description": "Framework agnosti reactive form handling",
   "keywords": [
     "form",
     "reactive",
@@ -9,13 +9,12 @@
     "validation",
     "event-driven"
   ],
-  "main": "dist/rxform.js",
-  "module": "dist/rxform.es.js",
-  "umd:main": "dist/rxform.umd.js",
-  "types": "./index.d.ts",
+  "main": "dist/rxform.cjs.js",
+  "module": "dist/rxform.esm.js",
+  "browser": "dist/rxform.umd.js",
+  "typings": "dist/index.d.ts",
   "files": [
-    "dist/**/*",
-    "index.d.ts"
+    "dist/**/*"
   ],
   "author": "Ahmed Tadde <ahmedtadde@gmail.com> (http://github.com/ahmedtadde)",
   "repository": {
@@ -27,53 +26,50 @@
     "node": ">=6.0.0"
   },
   "scripts": {
-    "lint": "tslint  --project tsconfig.json -t codeFrame 'src/**/*.ts'",
-    "prebuild": "rimraf dist",
-    "build": "rollup -c rollup.config.ts && rimraf .rpt2_cache && npx bundlesize",
-    "start": "rollup -c rollup.config.ts -w"
+    "lint": "eslint --ext .js,.ts src/* --fix && prettier --write \"src/**/*.{js,ts}\"",
+    "update-examples-dist": "npx copyfiles dist/rxform.umd.js examples/user-registration",
+    "build": "rollup -c rollup.config.ts && npm run update-examples-dist",
+    "start": "npm run dev",
+    "dev": "rollup -c rollup.config.ts -w && npm run update-examples-dist"
   },
   "devDependencies": {
-    "@babel/core": "^7.8.4",
-    "@types/lodash.clonedeep": "^4.5.6",
-    "@types/node": "^13.5.3",
+    "@rollup/plugin-alias": "^3.0.1",
+    "@rollup/plugin-commonjs": "^11.0.2",
+    "@rollup/plugin-node-resolve": "^7.1.1",
+    "@rollup/plugin-typescript": "^4.0.0",
+    "@types/eslint": "^6.1.8",
+    "@types/eslint-plugin-prettier": "^2.2.0",
+    "@types/node": "^13.9.3",
+    "@types/prettier": "^1.19.1",
+    "@types/rimraf": "^3.0.0",
+    "@typescript-eslint/eslint-plugin": "^2.24.0",
+    "@typescript-eslint/parser": "^2.24.0",
     "bundlesize": "^0.18.0",
-    "prettier": "^1.19.1",
-    "rimraf": "^3.0.1",
-    "rollup": "^1.30.1",
-    "rollup-plugin-analyzer": "^3.2.2",
-    "rollup-plugin-babel": "^4.3.3",
-    "rollup-plugin-commonjs": "^10.1.0",
-    "rollup-plugin-node-builtins": "^2.1.2",
-    "rollup-plugin-node-resolve": "^5.2.0",
-    "rollup-plugin-sourcemaps": "^0.5.0",
-    "rollup-plugin-terser": "^5.2.0",
-    "rollup-plugin-typescript2": "^0.25.3",
-    "shelljs": "^0.8.3",
-    "tslint": "^6.0.0",
-    "tslint-config-prettier": "^1.18.0",
-    "tslint-config-standard": "^9.0.0",
-    "tslint-eslint-rules": "^5.4.0",
-    "tslint-immutable": "^6.0.1",
-    "tslint-microsoft-contrib": "^6.2.0",
-    "typescript": "^3.7.5"
+    "eslint": "^6.8.0",
+    "eslint-config-prettier": "^6.10.1",
+    "eslint-plugin-prettier": "^3.1.2",
+    "mkdirp": "^1.0.3",
+    "prettier": "^2.0.1",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.1.0",
+    "ts-node": "^8.8.1",
+    "tsconfig-paths": "^3.9.0",
+    "tslib": "^1.11.1",
+    "typescript": "^3.8.3"
   },
-  "typings": "./index.d.ts",
-  "dependencies": {
-    "lodash.clonedeep": "^4.5.0",
-    "mitt": "^1.2.0"
-  },
+  "dependencies": {},
   "bundlesize": [
     {
       "path": "dist/rxform.umd.js",
-      "maxSize": "10kB"
+      "maxSize": "7kB"
     },
     {
       "path": "dist/rxform.es.js",
-      "maxSize": "10kB"
+      "maxSize": "7kB"
     },
     {
-      "path": "dist/rxform.js",
-      "maxSize": "10kB"
+      "path": "dist/rxform.cjs",
+      "maxSize": "7kB"
     }
   ]
 }

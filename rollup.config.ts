@@ -1,55 +1,38 @@
-import babel from 'rollup-plugin-babel';
-import commonjs from 'rollup-plugin-commonjs';
-import resolve from 'rollup-plugin-node-resolve';
-// import sourceMaps from 'rollup-plugin-sourcemaps';
-import { terser } from 'rollup-plugin-terser';
-import typescript from 'rollup-plugin-typescript2';
+import resolve from "@rollup/plugin-node-resolve";
+import commonjs from "@rollup/plugin-commonjs";
+import typescript from "@rollup/plugin-typescript";
+import pkg from "./package.json";
 
-// tslint:disable-next-line: no-var-requires
-const pkg = require('./package.json');
-const libraryName = 'RxForm';
+export default [
+  // browser-friendly UMD build
+  {
+    input: "src/index.ts",
+    output: {
+      name: "RxForm",
+      file: pkg.browser,
+      format: "umd"
+    },
+    plugins: [
+      resolve(), // so Rollup can find `ms`
+      commonjs(), // so Rollup can convert `ms` to an ES module
+      typescript() // so Rollup can convert TypeScript to JavaScript
+    ]
+  },
 
-export default {
-  // Indicate here external modules you don't wanna include in your bundle (i.e.: 'lodash')
-  external: [],
-  input: 'src/index.ts',
-  output: [
-    {
-      file: pkg['umd:main'],
-      format: 'umd',
-      name: libraryName,
-      sourcemap: false
-    },
-    {
-      file: pkg.module,
-      format: 'es',
-      name: libraryName,
-      sourcemap: true
-    },
-    {
-      file: pkg.main,
-      format: 'cjs',
-      name: libraryName,
-      sourcemap: true
-    }
-  ],
-  plugins: [
-    // Compile TypeScript files
-    typescript({
-      useTsconfigDeclarationDir: true
-    }),
-    babel(),
-    // Allow bundling cjs modules (unlike webpack, rollup doesn't understand cjs)
-    commonjs(),
-    // Allow node_modules resolution, so you can use 'external' to control
-    // which external modules to include in the bundle
-    // https://github.com/rollup/rollup-plugin-node-resolve#usage
-    resolve(),
-    terser()
-    // Resolve source maps to the original source
-    // sourceMaps()
-  ],
-  watch: {
-    include: 'src/**'
+  // CommonJS (for Node) and ES module (for bundlers) build.
+  // (We could have three entries in the configuration array
+  // instead of two, but it's quicker to generate multiple
+  // builds from a single configuration where possible, using
+  // an array for the `output` option, where we can specify
+  // `file` and `format` for each target)
+  {
+    input: "src/index.ts",
+    plugins: [
+      typescript() // so Rollup can convert TypeScript to JavaScript
+    ],
+    output: [
+      { file: pkg.main, format: "cjs" },
+      { file: pkg.module, format: "es" }
+    ]
   }
-};
+];
