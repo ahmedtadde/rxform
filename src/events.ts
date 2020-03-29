@@ -199,18 +199,18 @@ export function init(
   }
 
   Object.values(FORM_EVENT_TYPE).forEach((eventtype: string) => {
-    // if (!([FORM_EVENT_TYPE.INPUT] as string[]).includes(eventtype)) {
-    //   $form.value.addEventListener(
-    //     eventtype.toLowerCase(),
-    //     internallisteners.formFieldEvents,
-    //     true
-    //   );
-    // }
-    $form.value.addEventListener(
-      eventtype.toLowerCase(),
-      internallisteners.formFieldEvents,
-      true
-    );
+    if (!([FORM_EVENT_TYPE.INPUT] as string[]).includes(eventtype)) {
+      $form.value.addEventListener(
+        eventtype.toLowerCase(),
+        internallisteners.formFieldEvents,
+        true
+      );
+    }
+    // $form.value.addEventListener(
+    //   eventtype.toLowerCase(),
+    //   internallisteners.formFieldEvents,
+    //   true
+    // );
   });
 
   [FORM_EVENT_TYPE.SUBMIT, FORM_EVENT_TYPE.RESET].forEach(

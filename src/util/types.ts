@@ -3,6 +3,7 @@ import { Provider } from "@/datatypes/Provider";
 import { Form } from "@datatypes/Form";
 // import { Either } from "@datatypes/Either";
 import { Option } from "@datatypes/Option";
+import { FormFieldValueObject } from "@/datatypes/Field";
 
 export type Predicate<T> = (x: T) => boolean;
 
@@ -35,3 +36,5 @@ export type FormInstanceUpdateFn = (
   type: keyof typeof FORM_INSTANCE_UPDATE_TYPE,
   payload: Provider | string
 ) => (instance: Option<Form>) => Form;
+
+export type FormValues = Map<string, FormFieldValueObject>;

@@ -2,16 +2,22 @@ import { Either, right, left } from "@datatypes/Either";
 import {
   FormEventType,
   FormInstanceUpdateFn,
-  FormFieldType
+  FormFieldType,
+  FormValues
 } from "@util/types";
 import { string, array, isRegExp, struct, $el } from "@util/operators";
 import {
   FORM_INSTANCE_UPDATE_TYPE,
   PROVIDER_FIELD_MATCHING_MODE,
-  FORM_EVENT_TYPE
+  FORM_EVENT_TYPE,
+  FORM_FIELD_TAG
 } from "@/config";
 import { Option, is, from, none, some, match } from "@datatypes/Option";
 import { Form } from "@datatypes/Form";
+import {
+  create as getfieldvalue,
+  FormFieldValueObject
+} from "@datatypes/Field";
 
 export type FormFieldSelectorExpression = string | RegExp;
 export type ProviderFieldMatchingMode = keyof typeof PROVIDER_FIELD_MATCHING_MODE;
@@ -197,6 +203,31 @@ export async function dispatch(
     const formdata = is.none(form.$form)
       ? none
       : some(new FormData(form.$form.value));
+
+    try {
+      if (is.some(form.$form)) {
+        const $form = form.$form.value;
+        const data = Array.from($form.elements).reduce(
+          (values: FormValues, element: Element) => {
+            if ($el.is.field(element)) {
+              const value = getfieldvalue(form.$form, some(element));
+              value.tag !== FORM_FIELD_TAG.NIL && values.set(value.name, value);
+              console.debug(
+                "RxForm processing form element... updated values",
+                values
+              );
+              return values;
+            }
+            return values;
+          },
+          new Map<string, FormFieldValueObject>()
+        );
+
+        console.warn("[RxForm] Form values", data);
+      }
+    } catch (error) {
+      console.error("[RxForm] Form values errors", error);
+    }
 
     Promise.all(
       Array.from(providers.values()).map((provider) => {

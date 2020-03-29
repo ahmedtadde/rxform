@@ -77,6 +77,6 @@ export const FORM_FIELD_TAG = {
   INPUT_URL: "input:url" as "INPUT_URL",
   INPUT_WEEK: "input:week" as "INPUT_WEEK",
   TEXTAREA: "textarea" as "TEXTAREA",
-  SINGLE_SELECT: "select:single" as "SINGLE_SELECT",
-  MULTIPLE_SELECT: "select:multiple" as "MULTIPLE_SELECT"
+  SELECT_SINGLE: "select:single" as "SELECT_SINGLE",
+  SELECT_MULTIPLE: "select:multiple" as "SELECT_MULTIPLE"
 };

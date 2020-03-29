@@ -117,6 +117,7 @@ export default function rxform(
     return from.nullable(instance.get(ref));
   };
 
+  //TODO: add mutation observer logic to form elment so that removed fields are also removed from the set of touched fields
   const updatetouched = (msg: Option<Msg>): void => {
     if (
       is.some(msg) &&

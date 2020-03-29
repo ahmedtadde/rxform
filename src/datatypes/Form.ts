@@ -1,4 +1,4 @@
-import { Provider, FormFieldRepository, matchfield } from "@datatypes/Provider";
+import { Provider, matchfield } from "@datatypes/Provider";
 import {
   Option,
   concat as optionconcat,
@@ -10,7 +10,7 @@ import {
 } from "@datatypes/Option";
 import { $el, string } from "@util/operators";
 import { Msg, FormFieldEvent } from "@/events";
-import { FormEventType } from "@util/types";
+import { FormEventType, FormFieldRepository } from "@util/types";
 
 export type TouchedFormFields = Set<string>;
 
