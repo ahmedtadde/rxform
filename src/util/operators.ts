@@ -67,13 +67,17 @@ export const $el = {
 
     return some($form.value);
   },
-  $field: (x: unknown): Option<FormFieldType> => {
+  $field: (x: unknown, y?: unknown): Option<FormFieldType> => {
     if ($el.is.field(x)) return some(x);
     if (is.none(string.optional(x, true))) return none;
+    const _y = string.is.nonempty(y) ? `form#${y.trim()}` : "form";
+
     const $field = from.nullable(
-      document.querySelector(`form input[name="${(x as string).trim()}"]`) ||
-        document.querySelector(`form select[name="${(x as string).trim()}"]`) ||
-        document.querySelector(`form textarea[name="${(x as string).trim()}"]`)
+      document.querySelector(`${_y} input[name="${(x as string).trim()}"]`) ||
+        document.querySelector(
+          `${_y} select[name="${(x as string).trim()}"]`
+        ) ||
+        document.querySelector(`${_y} textarea[name="${(x as string).trim()}"]`)
     );
     if (is.none($field)) return none;
     if (!$el.is.field($field.value)) return none;

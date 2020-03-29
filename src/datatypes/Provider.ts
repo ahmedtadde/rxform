@@ -26,13 +26,6 @@ export interface Provider {
   readonly decoders: Decoder[];
 }
 
-export interface FormFieldRepository<T> {
-  readonly store: Map<T, T>;
-  readonly get: () => T;
-  readonly set: (providers: string[], fieldname: string) => T;
-  readonly remove: (provider: string) => T;
-}
-
 export const base: Provider = {
   tag: "base",
   include: [],

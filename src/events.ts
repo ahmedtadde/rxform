@@ -1,12 +1,13 @@
 import { ACTION_TAG, FORM_FIELD_EVENT_TYPE, FORM_EVENT_TYPE } from "@/config";
-import { FormFielEventType, FormEventType } from "@util/types";
+import {
+  FormFielEventType,
+  FormEventType,
+  FormFieldRepository
+} from "@util/types";
 import { Option, some, none, is, match } from "@datatypes/Option";
 import { $el } from "@util/operators";
 import { Form, router } from "@datatypes/Form";
-import {
-  dispatch as dispatchProviders,
-  FormFieldRepository
-} from "@datatypes/Provider";
+import { dispatch as dispatchProviders } from "@datatypes/Provider";
 import { match as matchEither } from "@datatypes/Either";
 
 export type Msg = FormFieldEvent | FormSubmissionEvent | FormResetEvent;
@@ -75,8 +76,8 @@ export function init(
   $getform: (f: Option<Form>) => Option<HTMLFormElement>,
   updatetouched: (msg: Option<Msg>) => void
 ): {
-  subscription: (handler: Sub) => () => void;
-  unbindevents: (f: Option<Form>) => void;
+  readonly subscription: (handler: Sub) => () => void;
+  readonly unbindevents: (f: Option<Form>) => void;
 } {
   const statesubscribers = new Set<Sub>();
 
@@ -297,5 +298,5 @@ export function init(
 
       statesubscribers.clear();
     }
-  };
+  } as const;
 }

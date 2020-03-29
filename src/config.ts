@@ -55,3 +55,28 @@ export const PROVIDER_FIELD_MATCHING_MODE = {
   CONJUNCTION: "conjuction" as "CONJUNCTION",
   DISJUNCTION: "disjunction" as "DISJUNCTION"
 } as const;
+
+export const FORM_FIELD_TAG = {
+  NIL: "nil" as "NIL",
+  INPUT_TEXT: "input:text" as "INPUT_TEXT",
+  INPUT_NUMBER: "input:number" as "INPUT_NUMBER",
+  INPUT_EMAIL: "input:email" as "INPUT_EMAIL",
+  INPUT_PASSWORD: "input:password" as "INPUT_PASSWORD",
+  INPUT_CHECKBOX: "input:checkbox" as "INPUT_CHECKBOX",
+  INPUT_RADIO: "input:radio" as "INPUT_RADIO",
+  INPUT_COLOR: "input:color" as "INPUT_COLOR",
+  INPUT_DATE: "input:date" as "INPUT_DATE",
+  INPUT_DATETIME_LOCAL: "input:datetime-local" as "INPUT_DATETIME_LOCAL",
+  INPUT_FILE: "input:file" as "INPUT_FILE",
+  INPUT_HIDDEN: "input:hidden" as "INPUT_HIDDEN",
+  INPUT_MONTH: "input:month" as "INPUT_MONTH",
+  INPUT_RANGE: "input:range" as "INPUT_RANGE",
+  INPUT_SEARCH: "input:search" as "INPUT_SEARCH",
+  INPUT_TEL: "input:tel" as "INPUT_TEL",
+  INPUT_TIME: "input:time" as "INPUT_TIME",
+  INPUT_URL: "input:url" as "INPUT_URL",
+  INPUT_WEEK: "input:week" as "INPUT_WEEK",
+  TEXTAREA: "textarea" as "TEXTAREA",
+  SINGLE_SELECT: "select:single" as "SINGLE_SELECT",
+  MULTIPLE_SELECT: "select:multiple" as "MULTIPLE_SELECT"
+};

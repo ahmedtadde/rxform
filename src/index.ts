@@ -8,12 +8,12 @@ import {
 import {
   Provider,
   Decoder,
-  register as registerProvider,
-  FormFieldRepository
+  register as registerProvider
 } from "@datatypes/Provider";
 import { init as eventbindings, Msg, FormFieldEvent } from "@/events";
 import { is, Option, match, from } from "@datatypes/Option";
 import { FORM_INSTANCE_UPDATE_TYPE, FORM_FIELD_EVENT_TYPE } from "@/config";
+import { FormFieldRepository } from "@util/types";
 import { string, array } from "@util/operators";
 
 function getupdatefn(
@@ -96,7 +96,9 @@ function getupdatefn(
   };
 }
 
-export default function rxform(formid: string): Record<string, Function> {
+export default function rxform(
+  formid: string
+): Readonly<Record<string, Function>> {
   const ref = match(
     () =>
       new Error(
@@ -211,5 +213,5 @@ export default function rxform(formid: string): Record<string, Function> {
       };
     },
     destroy
-  };
+  } as const;
 }

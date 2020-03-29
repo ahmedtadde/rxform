@@ -13,6 +13,13 @@ export type Primitive = string | number | boolean;
 //   encode: <I, O>(o: Option<O>) => Either<Error[], I>;
 // }
 
+export interface FormFieldRepository<T> {
+  readonly store: Map<T, T>;
+  readonly get: () => T;
+  readonly set: (providers: string[], fieldname: string) => T;
+  readonly remove: (provider: string) => T;
+}
+
 export type FormFieldType =
   | HTMLInputElement
   | HTMLTextAreaElement
