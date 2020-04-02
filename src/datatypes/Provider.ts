@@ -3,21 +3,16 @@ import {
   FormEventType,
   FormInstanceUpdateFn,
   FormFieldType,
-  FormValues
+  ReadonlyFormValues
 } from "@util/types";
 import { string, array, isRegExp, struct, $el } from "@util/operators";
 import {
   FORM_INSTANCE_UPDATE_TYPE,
   PROVIDER_FIELD_MATCHING_MODE,
-  FORM_EVENT_TYPE,
-  FORM_FIELD_TAG
+  FORM_EVENT_TYPE
 } from "@/config";
-import { Option, is, from, none, some, match } from "@datatypes/Option";
+import { Option, is, from, match } from "@datatypes/Option";
 import { Form } from "@datatypes/Form";
-import {
-  create as getfieldvalue,
-  FormFieldValueObject
-} from "@datatypes/Field";
 
 export type FormFieldSelectorExpression = string | RegExp;
 export type ProviderFieldMatchingMode = keyof typeof PROVIDER_FIELD_MATCHING_MODE;
@@ -37,7 +32,12 @@ export const base: Provider = {
   include: [],
   exclude: [],
   decoders: [],
-  events: [FORM_EVENT_TYPE.CHANGE, FORM_EVENT_TYPE.SUBMIT],
+  events: [
+    FORM_EVENT_TYPE.CHANGE,
+    FORM_EVENT_TYPE.BLUR,
+    FORM_EVENT_TYPE.SUBMIT,
+    FORM_EVENT_TYPE.RESET
+  ],
   mode: PROVIDER_FIELD_MATCHING_MODE.DISJUNCTION
 };
 
@@ -98,7 +98,7 @@ export function concat(x: Provider, y: Partial<Provider>): Provider {
     exclude,
     decoders,
     events,
-    include
+    include: include.length ? include : [tag]
   });
 }
 
@@ -186,9 +186,9 @@ export function register(
 }
 
 export async function run(
-  provider: Option<Provider>,
-  data: Option<FormData>
-): Promise<Either<Error, Option<FormData>>> {
+  provider: Provider,
+  data: ReadonlyFormValues
+): Promise<Either<Error[], ReadonlyFormValues>> {
   return new Promise((resolve) => {
     provider;
     resolve(right(data));
@@ -196,48 +196,21 @@ export async function run(
 }
 
 export async function dispatch(
-  form: Form,
-  providers: Map<string, Provider>
-): Promise<Either<Error[], Option<FormData>>> {
+  providers: Map<string, Provider>,
+  formdata: ReadonlyFormValues
+): Promise<Either<Map<string, Error[]>, ReadonlyFormValues>> {
   return new Promise((resolve) => {
-    const formdata = is.none(form.$form)
-      ? none
-      : some(new FormData(form.$form.value));
-
-    try {
-      if (is.some(form.$form)) {
-        const $form = form.$form.value;
-        const data = Array.from($form.elements).reduce(
-          (values: FormValues, element: Element) => {
-            if ($el.is.field(element)) {
-              const value = getfieldvalue(form.$form, some(element));
-              value.tag !== FORM_FIELD_TAG.NIL && values.set(value.name, value);
-              console.debug(
-                "RxForm processing form element... updated values",
-                values
-              );
-              return values;
-            }
-            return values;
-          },
-          new Map<string, FormFieldValueObject>()
-        );
-
-        console.warn("[RxForm] Form values", data);
-      }
-    } catch (error) {
-      console.error("[RxForm] Form values errors", error);
-    }
-
     Promise.all(
       Array.from(providers.values()).map((provider) => {
-        run(some(provider), formdata);
+        run(provider, formdata);
       })
     )
       .then(() => {
         resolve(right(formdata));
       })
-      .catch((err: Error) => resolve(left([err])));
+      .catch((err: Error) =>
+        resolve(left(new Map<string, Error[]>().set("providers", [err])))
+      );
   });
 }
 

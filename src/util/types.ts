@@ -1,4 +1,8 @@
-import { FORM_EVENT_TYPE, FORM_INSTANCE_UPDATE_TYPE } from "@/config";
+import {
+  FORM_EVENT_TYPE,
+  FORM_INSTANCE_UPDATE_TYPE,
+  FORM_SUBMISSION_STATUS
+} from "@/config";
 import { Provider } from "@/datatypes/Provider";
 import { Form } from "@datatypes/Form";
 // import { Either } from "@datatypes/Either";
@@ -37,4 +41,10 @@ export type FormInstanceUpdateFn = (
   payload: Provider | string
 ) => (instance: Option<Form>) => Form;
 
-export type FormValues = Map<string, FormFieldValueObject>;
+export type FormValues = Map<string, Readonly<FormFieldValueObject>>;
+export type ReadonlyFormValues = ReadonlyMap<
+  string,
+  Readonly<FormFieldValueObject>
+>;
+
+export type FormSubmissionStatus = keyof typeof FORM_SUBMISSION_STATUS;

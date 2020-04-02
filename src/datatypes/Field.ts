@@ -3,7 +3,7 @@ import { FormFieldType } from "@/util/types";
 import { Option, match as optionmatch, is } from "@datatypes/Option";
 import { string, $el } from "@util/operators";
 
-export type FormFieldValidity = Readonly<Error>[];
+export type FormFieldValidity = Readonly<ValidityState>;
 export type FormFieldValueObject =
   | TextField
   | TextareaField
@@ -222,14 +222,11 @@ export class NilField {
   readonly tag = FORM_FIELD_TAG.NIL;
   readonly name = "";
   readonly value = "";
-  readonly validity: FormFieldValidity = [];
+  readonly validity: FormFieldValidity = {} as FormFieldValidity;
 }
 
 function getvalidity($target: FormFieldType): FormFieldValidity {
-  const message = $target.validationMessage;
-  return string.is.nonempty(message)
-    ? ([new Error(message.trim())] as FormFieldValidity)
-    : ([] as FormFieldValidity);
+  return Object.freeze($target.validity);
 }
 
 function getvalue(
@@ -370,14 +367,6 @@ export function create(
   const tag = `${_$target.tagName.toLowerCase()}:${_$target.type}`;
   const value = getvalue(_$form, _$target);
   const validity = getvalidity(_$target);
-
-  console.debug(
-    "field creation... name, tag, value, validity",
-    name,
-    tag,
-    value,
-    validity
-  );
 
   switch (tag) {
     case FORM_FIELD_TAG.INPUT_TEXT: {

@@ -1,17 +1,29 @@
-import { ACTION_TAG, FORM_FIELD_EVENT_TYPE, FORM_EVENT_TYPE } from "@/config";
+import {
+  ACTION_TAG,
+  FORM_FIELD_EVENT_TYPE,
+  FORM_EVENT_TYPE,
+  FORM_SUBMISSION_STATUS
+} from "@/config";
 import {
   FormFielEventType,
   FormEventType,
-  FormFieldRepository
+  FormFieldRepository,
+  ReadonlyFormValues,
+  FormSubmissionStatus
 } from "@util/types";
 import { Option, some, none, is, match } from "@datatypes/Option";
 import { $el } from "@util/operators";
-import { Form, router } from "@datatypes/Form";
+import { Form, router, getformvalues } from "@datatypes/Form";
 import { dispatch as dispatchProviders } from "@datatypes/Provider";
 import { match as matchEither } from "@datatypes/Either";
+import { FormFieldValueObject } from "./datatypes/Field";
 
 export type Msg = FormFieldEvent | FormSubmissionEvent | FormResetEvent;
-export type Sub = (errors: Record<string, Error>, touched: string[]) => void;
+export type Sub = (
+  values: Record<string, Readonly<FormFieldValueObject>>,
+  errors: Record<string, Error[]>,
+  touched: string[]
+) => void;
 
 export class FormFieldEvent {
   readonly _tag = ACTION_TAG.FORM_FIELD_EVENT;
@@ -37,24 +49,32 @@ export class FormFieldEvent {
 export class FormSubmissionEvent {
   readonly _tag = ACTION_TAG.FORM_SUBMISSION_EVENT;
   readonly type: FormEventType = FORM_EVENT_TYPE.SUBMIT;
-  private constructor(readonly data: Option<FormData>) {}
+  private constructor(
+    public status: FormSubmissionStatus,
+    readonly timestamp: number
+  ) {}
 
   static create(evt: Event): Option<Msg> {
     const $form = $el.$form(evt.target);
     if (is.none($form)) return none;
-    return some(new FormSubmissionEvent(some(new FormData($form.value))));
+    return some(
+      new FormSubmissionEvent(
+        FORM_SUBMISSION_STATUS.ONGOING,
+        new Date().getTime()
+      )
+    );
   }
 }
 
 export class FormResetEvent {
   readonly _tag = ACTION_TAG.FORM_RESET_EVENT;
   readonly type: FormEventType = FORM_EVENT_TYPE.RESET;
-  private constructor(readonly data: Option<FormData>) {}
+  private constructor(readonly timestamp: number) {}
 
   static create(evt: Event): Option<Msg> {
     const $form = $el.$form(evt.target);
     if (is.none($form)) return none;
-    return some(new FormResetEvent(some(new FormData($form.value))));
+    return some(new FormResetEvent(new Date().getTime()));
   }
 }
 
@@ -101,37 +121,42 @@ export function init(
           updatetouched(msg);
 
           const providers = router(form, formfields, evt.detail as Option<Msg>);
-          console.debug("Providers returned by router", providers);
 
-          dispatchProviders(form, providers).then((result) => {
-            const _f = instance();
-            const touched = is.some(_f)
-              ? Array.from(f.value.touched)
-              : ([] as string[]);
+          if (providers.size) {
+            const formvalues = getformvalues(form.$form) as ReadonlyMap<
+              string,
+              Readonly<FormFieldValueObject>
+            >;
+            dispatchProviders(providers, formvalues).then((result) => {
+              const _f = instance();
+              const touched = is.some(_f)
+                ? Array.from(f.value.touched)
+                : ([] as string[]);
 
-            const geterrorbag = matchEither<
-              Error[],
-              Option<FormData>,
-              Record<string, Error>,
-              Record<string, Error>
-            >(
-              (errors: Error[]) => {
-                return errors.reduce(
-                  (record: Record<string, Error>, err: Error) => {
-                    return Object.assign({}, record, {
-                      [err.name]: err
-                    });
-                  },
-                  {} as Record<string, Error>
+              const geterrorbag = matchEither<
+                Map<string, Error[]>,
+                ReadonlyFormValues,
+                Record<string, Error[]>,
+                Record<string, Error[]>
+              >(
+                (errors: Map<string, Error[]>) => {
+                  return Object.fromEntries(errors) as Record<string, Error[]>;
+                },
+                () => ({} as Record<string, Error[]>)
+              );
+
+              Array.from(statesubscribers.values()).forEach((fn: Sub) => {
+                fn(
+                  Object.fromEntries(formvalues) as Record<
+                    string,
+                    Readonly<FormFieldValueObject>
+                  >,
+                  geterrorbag(result),
+                  touched
                 );
-              },
-              () => ({} as Record<string, Error>)
-            );
-
-            Array.from(statesubscribers.values()).forEach((fn: Sub) => {
-              fn(geterrorbag(result), touched);
+              });
             });
-          });
+          }
         }
       }
     }
@@ -199,18 +224,18 @@ export function init(
   }
 
   Object.values(FORM_EVENT_TYPE).forEach((eventtype: string) => {
-    if (!([FORM_EVENT_TYPE.INPUT] as string[]).includes(eventtype)) {
-      $form.value.addEventListener(
-        eventtype.toLowerCase(),
-        internallisteners.formFieldEvents,
-        true
-      );
-    }
-    // $form.value.addEventListener(
-    //   eventtype.toLowerCase(),
-    //   internallisteners.formFieldEvents,
-    //   true
-    // );
+    // if (!([FORM_EVENT_TYPE.INPUT] as string[]).includes(eventtype)) {
+    //   $form.value.addEventListener(
+    //     eventtype.toLowerCase(),
+    //     internallisteners.formFieldEvents,
+    //     true
+    //   );
+    // }
+    $form.value.addEventListener(
+      eventtype.toLowerCase(),
+      internallisteners.formFieldEvents,
+      true
+    );
   });
 
   [FORM_EVENT_TYPE.SUBMIT, FORM_EVENT_TYPE.RESET].forEach(

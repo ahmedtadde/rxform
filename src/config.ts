@@ -45,11 +45,11 @@ export const FORM_INSTANCE_UPDATE_TYPE = {
 //   SUBMISSIONS: "submissions" as "SUBMISSIONS"
 // } as const;
 
-// export const FORM_SUBMISSION_STATUS = {
-//   ONGOING: "ongoing" as "ongoing",
-//   SUCCESS: "success" as "success",
-//   FAILURE: "failure" as "failure"
-// } as const;
+export const FORM_SUBMISSION_STATUS = {
+  ONGOING: "ongoing" as "ONGOING",
+  SUCCESS: "success" as "SUCCESS",
+  FAILURE: "failure" as "FAILURE"
+} as const;
 
 export const PROVIDER_FIELD_MATCHING_MODE = {
   CONJUNCTION: "conjuction" as "CONJUNCTION",

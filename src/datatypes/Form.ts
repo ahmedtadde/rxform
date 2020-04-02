@@ -10,7 +10,13 @@ import {
 } from "@datatypes/Option";
 import { $el, string } from "@util/operators";
 import { Msg, FormFieldEvent } from "@/events";
-import { FormEventType, FormFieldRepository } from "@util/types";
+import { FormEventType, FormFieldRepository, FormValues } from "@util/types";
+import {
+  FormFieldValueObject,
+  create as getfieldvalue
+} from "@datatypes/Field";
+
+import { FORM_FIELD_TAG } from "@/config";
 
 export type TouchedFormFields = Set<string>;
 
@@ -93,7 +99,8 @@ export const router = (
   const fieldname = msg.value instanceof FormFieldEvent ? msg.value.name : none;
   const store = formfields.get();
   for (const [providername, provider] of form.providers.entries()) {
-    if (is.some(fieldname) && store.get(providername)?.has(fieldname.value)) {
+    const fieldset = store.get(providername);
+    if (is.some(fieldname) && fieldset && fieldset.has(fieldname.value)) {
       providers.set(providername, provider);
       continue;
     }
@@ -109,3 +116,26 @@ export const router = (
 
   return providers;
 };
+
+export function getformvalues(
+  $form: Option<HTMLFormElement>
+): Map<string, Readonly<FormFieldValueObject>> {
+  return match(
+    () => new Map<string, Readonly<FormFieldValueObject>>(),
+    (_$form: HTMLFormElement) => {
+      return Array.from(_$form.elements).reduce(
+        (values: FormValues, element: Element) => {
+          if ($el.is.field(element)) {
+            const value = getfieldvalue(some(_$form), some(element));
+            if (value.tag !== FORM_FIELD_TAG.NIL) {
+              return values.set(value.name, Object.freeze(value));
+            }
+            return values;
+          }
+          return values;
+        },
+        new Map<string, Readonly<FormFieldValueObject>>()
+      );
+    }
+  )($form);
+}
